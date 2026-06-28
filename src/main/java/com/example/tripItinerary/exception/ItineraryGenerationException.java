@@ -1,5 +1,10 @@
 package com.example.tripItinerary.exception;
 
-public class ItineraryGenerationException {
-    
+
+
+public class ItineraryGenerationException extends RuntimeException {
+
+    public ItineraryGenerationException(String message) {
+        super(message);
+    }
 }
