@@ -12,5 +12,7 @@ public interface ItineraryPlaceRepository
         extends JpaRepository<ItineraryPlace, Long> {
 
     List<ItineraryPlace> findByItineraryDayIdOrderByVisitOrder(Long itineraryDayId);
+    
+    void deleteByItineraryDayItineraryId(Long itineraryId);
 
 }

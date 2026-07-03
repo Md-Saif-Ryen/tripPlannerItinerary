@@ -1,5 +1,73 @@
 package com.example.tripItinerary.Controller;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import com.example.tripItinerary.DTO.request.UserRequest;
+import com.example.tripItinerary.DTO.response.ApiResponse;
+import com.example.tripItinerary.DTO.response.UserResponse;
+import com.example.tripItinerary.Service.UserService;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/api/v1/users")
+@RequiredArgsConstructor
+@Validated
+@CrossOrigin(origins = "*")
 public class UserController {
-    
+
+    private final UserService userService;
+
+    @PostMapping
+    public ResponseEntity<ApiResponse<UserResponse>> create(
+            @Valid @RequestBody UserRequest request) {
+
+        UserResponse response = userService.create(request);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("User created successfully.", response));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<UserResponse>> update(
+            @PathVariable Long id,
+            @Valid @RequestBody UserRequest request) {
+
+        UserResponse response = userService.update(id, request);
+
+        return ResponseEntity.ok(
+                ApiResponse.success("User updated successfully.", response));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<UserResponse>> getById(
+            @PathVariable Long id) {
+
+        return ResponseEntity.ok(
+                ApiResponse.success(userService.getById(id)));
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<UserResponse>>> getAll() {
+
+        return ResponseEntity.ok(
+                ApiResponse.success(userService.getAll()));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> delete(
+            @PathVariable Long id) {
+
+        userService.delete(id);
+
+        return ResponseEntity.ok(
+                ApiResponse.success("User deleted successfully.", null));
+    }
+
 }

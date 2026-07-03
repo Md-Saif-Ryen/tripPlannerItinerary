@@ -10,5 +10,8 @@ public interface ItineraryDayRepository
         extends JpaRepository<ItineraryDay, Long> {
 
     List<ItineraryDay> findByItineraryIdOrderByDayNumber(Long itineraryId);
+    
+    void deleteByItineraryId(Long itineraryId);
+    
 
 }

@@ -56,18 +56,18 @@ public class ItineraryPlace {
     private LocalTime plannedEndTime;
 
     @Builder.Default
-    @Column(name = "estimated_cost", precision = 10, scale = 2)
+    @Column(name = "estimated_cost", precision = 10, scale = 2, nullable = false)
     private BigDecimal estimatedCost = BigDecimal.ZERO;
 
     @Builder.Default
-    @Column(name = "travel_time_minutes")
+    @Column(name = "travel_time_minutes", nullable = false)
     private Integer travelTimeMinutes = 0;
 
     @Column(columnDefinition = "TEXT")
     private String notes;
 
     @Builder.Default
-    @Column(name = "is_completed")
+    @Column(name = "is_completed", nullable = false)
     private Boolean completed = false;
 
     @CreationTimestamp
@@ -77,5 +77,7 @@ public class ItineraryPlace {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+   
 
 }

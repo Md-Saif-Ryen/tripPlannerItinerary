@@ -18,6 +18,7 @@ public class ItineraryResponse {
 
     private Long id;
 
+    private String locationName;
     private Long userId;
 
     private Long locationId;

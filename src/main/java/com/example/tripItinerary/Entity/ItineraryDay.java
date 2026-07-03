@@ -46,7 +46,16 @@ public class ItineraryDay {
     // ================= Relationships =================
     @JsonIgnore
     @Builder.Default
-    @OneToMany(mappedBy = "itineraryDay", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "itineraryDay", cascade = CascadeType.ALL,    fetch = FetchType.LAZY, orphanRemoval = true)
     private List<ItineraryPlace> itineraryPlaces = new ArrayList<>();
 
+    public void addPlace(ItineraryPlace place) {
+        itineraryPlaces.add(place);
+        place.setItineraryDay(this);
+    }
+
+    public void removePlace(ItineraryPlace place) {
+        itineraryPlaces.remove(place);
+        place.setItineraryDay(null);
+    }
 }

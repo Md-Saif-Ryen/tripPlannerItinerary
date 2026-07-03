@@ -13,5 +13,8 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
     List<Hotel> findByLocationIdAndActiveTrue(Long locationId);
 
     List<Hotel> findByStarRating(Integer starRating);
+    
+    List<Hotel> findByLocationIdAndActiveTrueOrderByAverageRatingDesc(
+            Long locationId);
 
 }

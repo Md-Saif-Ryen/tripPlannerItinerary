@@ -22,7 +22,6 @@ public class LoginRequest {
     private String email;
 
     @NotBlank(message = "Password is required.")
-    @Size(min = 8, max = 100)
     private String password;
 
 }

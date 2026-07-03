@@ -13,10 +13,19 @@ public interface TouristPlaceRepository extends JpaRepository<TouristPlace, Long
 
     List<TouristPlace> findByCategory(PlaceCategory category);
 
+    List<TouristPlace> findByLocationIdOrderByPopularityScoreDesc(Long locationId);
+
+List<TouristPlace> findTop20ByLocationIdOrderByAverageRatingDescPopularityScoreDesc(Long locationId);
+
+    List<TouristPlace> findByLocationIdAndActiveTrueOrderByPopularityScoreDescAverageRatingDescPlaceWeightDesc(
+            Long locationId);
+
     List<TouristPlace> findByLocationIdAndActiveTrue(Long locationId);
 
     List<TouristPlace> findByLocationIdAndCategory(
             Long locationId,
             PlaceCategory category);
+
+          
 
 }

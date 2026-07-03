@@ -24,6 +24,6 @@ public interface ItineraryMapper {
 
     @Mapping(source = "user.id", target = "userId")
     @Mapping(source = "location.id", target = "locationId")
+    // @Mapping(source = "location.name", target = "locationName")
     ItineraryResponse toResponse(Itinerary entity);
-
 }

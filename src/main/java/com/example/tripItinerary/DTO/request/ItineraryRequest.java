@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import com.example.tripItinerary.enums.TravelType;
 
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -32,8 +33,10 @@ public class ItineraryRequest {
     @Min(value = 1)
     private Integer totalDays;
 
+    @DecimalMin(value = "0.0")
     private BigDecimal totalBudget;
 
+    @DecimalMin(value = "0.0")
     private BigDecimal estimatedCost;
 
     @NotNull(message = "Travel type is required.")
