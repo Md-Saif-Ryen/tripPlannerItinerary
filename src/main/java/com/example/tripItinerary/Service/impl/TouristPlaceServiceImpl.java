@@ -85,7 +85,7 @@ public class TouristPlaceServiceImpl implements TouristPlaceService {
     @Transactional(readOnly = true)
     public TouristPlaceResponse getById(Long id) {
 
-        @SuppressWarnings("null")
+        System.out.println("Fetching tourist place with ID: " + id);
         TouristPlace touristPlace = touristPlaceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Tourist place not found with id : " + id));

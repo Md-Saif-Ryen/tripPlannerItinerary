@@ -23,7 +23,7 @@ public class ItineraryController {
 
     private final ItineraryService itineraryService;
 
-    @PostMapping("/generate")
+    @PostMapping("/generate_iterary")
     public ResponseEntity<ApiResponse<ItineraryResponse>> generate(
             @Valid @RequestBody ItineraryRequest request) {
 
@@ -35,7 +35,7 @@ public class ItineraryController {
                         response));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/updateById/{id}")
     public ResponseEntity<ApiResponse<ItineraryResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody ItineraryRequest request) {
@@ -48,7 +48,7 @@ public class ItineraryController {
                         response));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/getById/{id}")
     public ResponseEntity<ApiResponse<ItineraryResponse>> getById(
             @PathVariable Long id) {
 
@@ -65,7 +65,7 @@ public class ItineraryController {
                         itineraryService.getMyItineraries()));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/deleteById/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long id) {
 

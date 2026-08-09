@@ -96,7 +96,13 @@ public class SecurityConfig {
                         .permitAll()
 
                         // Authentication
-                        .requestMatchers("/api/v1/auth/**")
+                        .requestMatchers("/api/v1/auth/**",
+                                "/api/v1/users/**",
+                            "/api/v1/hotels/**",
+                            "/api/v1/restaurants/**",
+                                "/api/itineraries/**",
+                                "/api/v1/locations/**",
+                                "/api/v1/tourist-places/**")
                         .permitAll()
 
                         // Public APIs

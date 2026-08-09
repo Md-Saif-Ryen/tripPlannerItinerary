@@ -26,6 +26,5 @@ List<TouristPlace> findTop20ByLocationIdOrderByAverageRatingDescPopularityScoreD
             Long locationId,
             PlaceCategory category);
 
-          
 
 }

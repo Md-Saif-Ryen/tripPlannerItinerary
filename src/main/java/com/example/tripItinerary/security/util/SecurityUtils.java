@@ -23,6 +23,7 @@ public class SecurityUtils {
      */
     public Authentication getAuthentication() {
 
+        System.out.println("SecurityContextHolder: " + SecurityContextHolder.getContext().getAuthentication());
         return SecurityContextHolder
                 .getContext()
                 .getAuthentication();
@@ -35,7 +36,7 @@ public class SecurityUtils {
     public boolean isAuthenticated() {
 
         Authentication authentication = getAuthentication();
-
+        System.out.println("Authentication: " + authentication);
         return authentication != null
                 && authentication.isAuthenticated()
                 && !(authentication instanceof AnonymousAuthenticationToken);
@@ -46,13 +47,14 @@ public class SecurityUtils {
      * Current Logged User Email
      */
     public String getCurrentUserEmail() {
-
+        System.out.println("Getting current user email...");
         if (!isAuthenticated()) {
 
             return null;
 
         }
 
+        System.out.println("Current User Email: " + getAuthentication().getName());
         return getAuthentication().getName();
 
     }
@@ -85,6 +87,7 @@ public class SecurityUtils {
 
         }
 
+        System.out.println("Fetching current user from repository with email: " + email);
         return userRepository
                 .findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Authenticated user not found."));

@@ -99,6 +99,15 @@ public class TouristPlace {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    // Add travel types field
+    @Column(name = "travel_types")
+    private String travelTypes; // Store as comma-separated: "SOLO,FAMILY"
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = false;
+
+    
+
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;

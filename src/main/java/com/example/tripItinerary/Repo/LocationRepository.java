@@ -13,11 +13,13 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
 
     List<Location> findByCityNameIgnoreCase(String cityName);
 
-    Optional<Location> findByNameIgnoreCase(String name);
-
-boolean existsByNameIgnoreCase(String name);
+  
     List<Location> findByStateNameIgnoreCaseAndCityNameIgnoreCase(
             String stateName,
             String cityName);
 
 }
+
+// Optional<Location> findByNameIgnoreCase(String name);
+
+// boolean existsByNameIgnoreCase(String name);

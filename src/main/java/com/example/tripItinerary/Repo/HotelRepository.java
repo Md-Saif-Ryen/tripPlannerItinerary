@@ -16,5 +16,7 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
     
     List<Hotel> findByLocationIdAndActiveTrueOrderByAverageRatingDesc(
             Long locationId);
+            
+    // List<Hotel> findByLocationIdAndIsActiveTrue(Long locationId);
 
 }

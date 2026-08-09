@@ -4,5 +4,6 @@ public enum ItineraryStatus {
     DRAFT,
     GENERATED,
     BOOKED,
-    COMPLETED
+    COMPLETED,
+    CONCERNED,PLANNED
 }

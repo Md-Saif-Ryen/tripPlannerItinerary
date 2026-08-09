@@ -1,7 +1,6 @@
 package com.example.tripItinerary.DTO.response;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import com.example.tripItinerary.enums.PlaceType;
@@ -16,38 +15,22 @@ import lombok.*;
 public class ItineraryPlaceResponse {
 
     private Long id;
-
     private PlaceType placeType;
-
     private Long referenceId;
-
-    // Flutter friendly fields
-    private String placeName;
-
-    private String address;
-
-    private BigDecimal latitude;
-
-    private BigDecimal longitude;
-
-    private String imageUrl;
-
     private Integer visitOrder;
-
     private LocalTime plannedStartTime;
-
     private LocalTime plannedEndTime;
-
     private BigDecimal estimatedCost;
-
     private Integer travelTimeMinutes;
-
     private String notes;
-
     private Boolean completed;
 
-    private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
-
+    // ✅ Display fields for Hotel, Restaurant, TouristPlace
+    private String placeName;
+    private String placeAddress;
+    private BigDecimal placeRating;
+    private String placeImage;
+    private BigDecimal placePrice;
+    private String contactNumber;
+    private String websiteUrl;
 }

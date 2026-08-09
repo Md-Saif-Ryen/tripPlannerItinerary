@@ -24,7 +24,7 @@ public class RestaurantController {
 
     private final RestaurantService restaurantService;
 
-    @PostMapping
+    @PostMapping("/create_restaurant")
     public ResponseEntity<ApiResponse<RestaurantResponse>> create(
             @Valid @RequestBody RestaurantRequest request) {
 
@@ -34,7 +34,7 @@ public class RestaurantController {
                         restaurantService.create(request)));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/updateById/{id}")
     public ResponseEntity<ApiResponse<RestaurantResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody RestaurantRequest request) {
@@ -45,7 +45,7 @@ public class RestaurantController {
                         restaurantService.update(id, request)));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/getById/{id}")
     public ResponseEntity<ApiResponse<RestaurantResponse>> getById(
             @PathVariable Long id) {
 
@@ -55,7 +55,7 @@ public class RestaurantController {
                         restaurantService.getById(id)));
     }
 
-    @GetMapping
+    @GetMapping("/getAll")
     public ResponseEntity<ApiResponse<List<RestaurantResponse>>> getAll() {
 
         return ResponseEntity.ok(
@@ -74,7 +74,7 @@ public class RestaurantController {
                         restaurantService.getByLocation(locationId)));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/deleteById/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long id) {
 

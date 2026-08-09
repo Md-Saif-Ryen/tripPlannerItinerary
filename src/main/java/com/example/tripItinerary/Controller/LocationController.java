@@ -24,17 +24,17 @@ public class LocationController {
 
     private final LocationService locationService;
 
-    @PostMapping
+    @PostMapping("/create_location")
     public ResponseEntity<ApiResponse<LocationResponse>> create(
             @Valid @RequestBody LocationRequest request) {
 
         LocationResponse response = locationService.create(request);
-
+        System.out.println("Creating location with state: " + request.getStateName() + ", city: " + request.getCityName() + ", address: " + request.getAddress());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Location created successfully.", response));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/updateById/{id}")
     public ResponseEntity<ApiResponse<LocationResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody LocationRequest request) {
@@ -45,7 +45,7 @@ public class LocationController {
                 ApiResponse.success("Location updated successfully.", response));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/getById/{id}")
     public ResponseEntity<ApiResponse<LocationResponse>> getById(
             @PathVariable Long id) {
 
@@ -53,14 +53,14 @@ public class LocationController {
                 ApiResponse.success(locationService.getById(id)));
     }
 
-    @GetMapping
+    @GetMapping("/getAll")
     public ResponseEntity<ApiResponse<List<LocationResponse>>> getAll() {
 
         return ResponseEntity.ok(
                 ApiResponse.success(locationService.getAll()));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/deleteById/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long id) {
 

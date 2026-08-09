@@ -9,5 +9,8 @@ public enum PlaceCategory {
     BEACH,
     SHOPPING,
     ENTERTAINMENT,
+    PARK,
+    CULTURAL,
+    LAKE,
     OTHER
 }

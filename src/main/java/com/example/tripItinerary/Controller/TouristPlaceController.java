@@ -24,7 +24,7 @@ public class TouristPlaceController {
 
         private final TouristPlaceService touristPlaceService;
 
-        @PostMapping
+        @PostMapping("/create_tourist_place")
         public ResponseEntity<ApiResponse<TouristPlaceResponse>> create(
                         @Valid @RequestBody TouristPlaceRequest request) {
 
@@ -34,7 +34,7 @@ public class TouristPlaceController {
                                                 touristPlaceService.create(request)));
         }
 
-        @PutMapping("/{id}")
+        @PutMapping("/updateById/{id}")
         public ResponseEntity<ApiResponse<TouristPlaceResponse>> update(
                         @PathVariable Long id,
                         @Valid @RequestBody TouristPlaceRequest request) {
@@ -45,17 +45,18 @@ public class TouristPlaceController {
                                                 touristPlaceService.update(id, request)));
         }
 
-        @GetMapping("/{id}")
+        @GetMapping("/getById/{id}")
         public ResponseEntity<ApiResponse<TouristPlaceResponse>> getById(
                         @PathVariable Long id) {
 
+                System.out.println("Fetching tourist place with ID: " + id);
                 return ResponseEntity.ok(
                                 ApiResponse.success(
                                                 "Tourist place fetched successfully.",
                                                 touristPlaceService.getById(id)));
         }
 
-        @GetMapping
+        @GetMapping("/getAll")
         public ResponseEntity<ApiResponse<List<TouristPlaceResponse>>> getAll() {
 
                 return ResponseEntity.ok(
@@ -74,7 +75,7 @@ public class TouristPlaceController {
                                                 touristPlaceService.getByLocation(locationId)));
         }
 
-        @DeleteMapping("/{id}")
+        @DeleteMapping("/deleteById/{id}")
         public ResponseEntity<ApiResponse<Void>> delete(
                         @PathVariable Long id) {
 

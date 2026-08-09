@@ -1,10 +1,14 @@
 package com.example.tripItinerary.Repo;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.example.tripItinerary.Entity.Itinerary;
@@ -31,6 +35,25 @@ public interface ItineraryRepository extends JpaRepository<Itinerary, Long> {
 
     List<Itinerary> findByUserId(
             Long userId);
-    Optional<Itinerary> findByIdAndUser(Long id, Long userId);
+    
+    Optional<Itinerary> findByIdAndUser_Id(Long id, Long userId);
+
+
+    List<Itinerary> findByUserIdOrderByCreatedAtDesc(Long userId);
+
+List<Itinerary> findByUserIdAndStartDateAfterOrderByStartDateAsc(Long userId, LocalDate startDate);
+
+List<Itinerary> findByUserIdAndTotalBudgetBetween(Long userId, BigDecimal minBudget, BigDecimal maxBudget);
+
+
+@Query("SELECT i FROM Itinerary i WHERE i.user.id = :userId " +
+       "AND (LOWER(i.title) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+       "OR LOWER(i.description) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+List<Itinerary> findByUserIdAndTitleContainingOrDescriptionContaining(
+        @Param("userId") Long userId,
+        @Param("keyword") String keyword,
+        @Param("keyword") String descriptionKeyword);
+
+List<Itinerary> findByUserIdAndItineraryStatus(Long userId, ItineraryStatus status);
 
 }

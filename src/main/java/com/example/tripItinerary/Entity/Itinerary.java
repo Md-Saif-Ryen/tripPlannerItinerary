@@ -1,6 +1,7 @@
 package com.example.tripItinerary.Entity;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,10 +30,11 @@ public class Itinerary {
     private Long id;
 
     // ================= Foreign Keys =================
-@JsonIgnore
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location_id", nullable = false)
@@ -40,7 +42,7 @@ public class Itinerary {
 
     // ================= Details =================
 
-    @Column(length = 255)
+    @Column(length = 255, nullable = false)
     private String title;
 
     @Column(columnDefinition = "TEXT")
@@ -55,6 +57,9 @@ public class Itinerary {
     @Column(name = "estimated_cost", precision = 10, scale = 2)
     private BigDecimal estimatedCost;
 
+    @Column(name = "remaining_budget", precision = 10, scale = 2)
+    private BigDecimal remainingBudget;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "travel_type")
     private TravelType travelType;
@@ -63,6 +68,12 @@ public class Itinerary {
     @Enumerated(EnumType.STRING)
     @Column(name = "itinerary_status")
     private ItineraryStatus itineraryStatus = ItineraryStatus.GENERATED;
+
+    @Column(name = "start_date")
+    private LocalDate startDate;
+
+    @Column(name = "end_date")
+    private LocalDate endDate;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

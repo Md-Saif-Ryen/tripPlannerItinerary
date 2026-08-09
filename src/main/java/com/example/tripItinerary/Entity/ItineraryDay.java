@@ -1,5 +1,6 @@
 package com.example.tripItinerary.Entity;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,14 +25,16 @@ public class ItineraryDay {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // ================= Foreign Key =================
-@JsonIgnore
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "itinerary_id", nullable = false)
     private Itinerary itinerary;
 
     @Column(name = "day_number", nullable = false)
     private Integer dayNumber;
+
+    @Column(name = "travel_date")
+    private LocalDate travelDate; // Added this field
 
     @Column(length = 255)
     private String title;
@@ -43,10 +46,9 @@ public class ItineraryDay {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    // ================= Relationships =================
     @JsonIgnore
     @Builder.Default
-    @OneToMany(mappedBy = "itineraryDay", cascade = CascadeType.ALL,    fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "itineraryDay", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<ItineraryPlace> itineraryPlaces = new ArrayList<>();
 
     public void addPlace(ItineraryPlace place) {

@@ -24,7 +24,7 @@ public class HotelController {
 
     private final HotelService hotelService;
 
-    @PostMapping
+    @PostMapping("/create_hotel")
     public ResponseEntity<ApiResponse<HotelResponse>> create(
             @Valid @RequestBody HotelRequest request) {
 
@@ -34,7 +34,7 @@ public class HotelController {
                         hotelService.create(request)));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/updateById/{id}")
     public ResponseEntity<ApiResponse<HotelResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody HotelRequest request) {
@@ -45,7 +45,7 @@ public class HotelController {
                         hotelService.update(id, request)));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/getById/{id}")
     public ResponseEntity<ApiResponse<HotelResponse>> getById(
             @PathVariable Long id) {
 
@@ -55,7 +55,7 @@ public class HotelController {
                         hotelService.getById(id)));
     }
 
-    @GetMapping
+    @GetMapping("/getAll")
     public ResponseEntity<ApiResponse<List<HotelResponse>>> getAll() {
 
         return ResponseEntity.ok(
@@ -74,7 +74,7 @@ public class HotelController {
                         hotelService.getByLocation(locationId)));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/deleteById/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long id) {
 

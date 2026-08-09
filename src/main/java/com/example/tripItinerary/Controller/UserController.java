@@ -24,17 +24,19 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping
+    @PostMapping("/create_user")
     public ResponseEntity<ApiResponse<UserResponse>> create(
             @Valid @RequestBody UserRequest request) {
 
+                System.out.println("Creating user with email: " + request.getEmail() + ", full name: " + request.getFullName());
         UserResponse response = userService.create(request);
 
+        System.out.println("User created with ID: " + response.getId() + ", email: " + response.getEmail() + ", full name: " + response.getFullName());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("User created successfully.", response));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/updateById/{id}")
     public ResponseEntity<ApiResponse<UserResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody UserRequest request) {
@@ -45,7 +47,7 @@ public class UserController {
                 ApiResponse.success("User updated successfully.", response));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/getById/{id}")
     public ResponseEntity<ApiResponse<UserResponse>> getById(
             @PathVariable Long id) {
 
@@ -60,7 +62,7 @@ public class UserController {
                 ApiResponse.success(userService.getAll()));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/deleteById/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long id) {
 
