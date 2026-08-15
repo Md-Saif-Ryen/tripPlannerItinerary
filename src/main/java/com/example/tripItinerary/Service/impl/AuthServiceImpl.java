@@ -85,6 +85,7 @@ public class AuthServiceImpl implements AuthService {
                 .message("Login successful.")
                 .token(token)
                 .tokenType("Bearer")
+                .fcmToken("asdfjsdfkjadhsfjkadnsfkjahsfeejwkdsfulidsvj")
                 .user(userMapper.toResponse(user))
                 .build();
 
@@ -95,7 +96,8 @@ public class AuthServiceImpl implements AuthService {
 
         User user = securityUtils.getCurrentUser();
 
-        System.out.println("Current User: " + user.getFullName() + ", Role: " + user.getRole() + ", Active: " + user.getActive());
+        System.out.println(
+                "Current User: " + user.getFullName() + ", Role: " + user.getRole() + ", Active: " + user.getActive());
         return userMapper.toResponse(user);
 
     }

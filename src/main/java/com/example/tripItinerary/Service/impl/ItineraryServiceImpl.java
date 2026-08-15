@@ -592,6 +592,16 @@ public class ItineraryServiceImpl implements ItineraryService {
                 return finalPlaces;
         }
 
+        @Override
+        public List<ItineraryResponse> getItineraryByUserId(Long userId) {
+                log.info("Fetching itineraries for user: {}", userId);
+
+                return itineraryRepository
+                                .findByUserIdOrderByCreatedAtDesc(userId)
+                                .stream()
+                                .map(itineraryMapper::toResponse)
+                                .toList();
+        }
         // private List<TouristPlace> filterTouristPlaces(List<TouristPlace> places,
         // Itinerary itinerary) {
         // log.info("Filtering tourist places...");

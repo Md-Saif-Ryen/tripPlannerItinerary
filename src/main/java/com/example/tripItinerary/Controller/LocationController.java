@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.tripItinerary.DTO.request.LocationRequest;
 import com.example.tripItinerary.DTO.response.ApiResponse;
+import com.example.tripItinerary.DTO.response.LocationNameResponse;
 import com.example.tripItinerary.DTO.response.LocationResponse;
 import com.example.tripItinerary.Service.LocationService;
 
@@ -70,4 +71,18 @@ public class LocationController {
                 ApiResponse.success("Location deleted successfully.", null));
     }
 
+    @GetMapping("/fetchByLocationName")
+        public ResponseEntity<ApiResponse<List<LocationNameResponse>>> getByLocationName() {
+
+        return ResponseEntity.ok(
+                ApiResponse.success(locationService.getByLocationName()));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<LocationNameResponse>>> searchLocations(
+                    @RequestParam String query) {
+
+            return ResponseEntity.ok(
+                            ApiResponse.success(locationService.searchLocations(query)));
+    }
 }

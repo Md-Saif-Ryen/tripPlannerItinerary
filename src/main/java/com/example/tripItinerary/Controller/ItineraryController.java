@@ -21,60 +21,69 @@ import lombok.RequiredArgsConstructor;
 @Validated
 public class ItineraryController {
 
-    private final ItineraryService itineraryService;
+        private final ItineraryService itineraryService;
 
-    @PostMapping("/generate_iterary")
-    public ResponseEntity<ApiResponse<ItineraryResponse>> generate(
-            @Valid @RequestBody ItineraryRequest request) {
+        @PostMapping("/generate_iterary")
+        public ResponseEntity<ApiResponse<ItineraryResponse>> generate(
+                        @Valid @RequestBody ItineraryRequest request) {
 
-        ItineraryResponse response = itineraryService.create(request);
+                ItineraryResponse response = itineraryService.create(request);
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(
-                        "Itinerary generated successfully.",
-                        response));
-    }
+                return ResponseEntity.status(HttpStatus.CREATED)
+                                .body(ApiResponse.success(
+                                                "Itinerary generated successfully.",
+                                                response));
+        }
 
-    @PutMapping("/updateById/{id}")
-    public ResponseEntity<ApiResponse<ItineraryResponse>> update(
-            @PathVariable Long id,
-            @Valid @RequestBody ItineraryRequest request) {
+        @GetMapping("/getItineraryByUserId/{id}")
+        public ResponseEntity<ApiResponse<List<ItineraryResponse>>> getItineraryByUserId(
+                        @PathVariable Long id) {
 
-        ItineraryResponse response = itineraryService.update(id, request);
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                itineraryService.getItineraryByUserId(id)));
+        }
 
-        return ResponseEntity.ok(
-                ApiResponse.success(
-                        "Itinerary updated successfully.",
-                        response));
-    }
+        @PutMapping("/updateById/{id}")
+        public ResponseEntity<ApiResponse<ItineraryResponse>> update(
+                        @PathVariable Long id,
+                        @Valid @RequestBody ItineraryRequest request) {
 
-    @GetMapping("/getById/{id}")
-    public ResponseEntity<ApiResponse<ItineraryResponse>> getById(
-            @PathVariable Long id) {
+                ItineraryResponse response = itineraryService.update(id, request);
 
-        return ResponseEntity.ok(
-                ApiResponse.success(
-                        itineraryService.getById(id)));
-    }
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                "Itinerary updated successfully.",
+                                                response));
+        }
 
-    @GetMapping("/my")
-    public ResponseEntity<ApiResponse<List<ItineraryResponse>>> getMyTrips() {
+        @GetMapping("/getById/{id}")
+        public ResponseEntity<ApiResponse<ItineraryResponse>> getById(
+                        @PathVariable Long id) {
 
-        return ResponseEntity.ok(
-                ApiResponse.success(
-                        itineraryService.getMyItineraries()));
-    }
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                itineraryService.getById(id)));
+        }
 
-    @DeleteMapping("/deleteById/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(
-            @PathVariable Long id) {
+        @GetMapping("/my")
+        public ResponseEntity<ApiResponse<List<ItineraryResponse>>> getMyTrips() {
 
-        itineraryService.delete(id);
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                itineraryService.getMyItineraries()));
+        }
 
-        return ResponseEntity.ok(
-                ApiResponse.success(
-                        "Itinerary deleted successfully.",
-                        null));
-    }
+        @DeleteMapping("/deleteById/{id}")
+        public ResponseEntity<ApiResponse<Void>> delete(
+                        @PathVariable Long id) {
+
+                itineraryService.delete(id);
+
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                "Itinerary deleted successfully.",
+                                                null));
+        }
 
 }

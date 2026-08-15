@@ -3,6 +3,7 @@ package com.example.tripItinerary.Service;
 import java.util.List;
 
 import com.example.tripItinerary.DTO.request.LocationRequest;
+import com.example.tripItinerary.DTO.response.LocationNameResponse;
 import com.example.tripItinerary.DTO.response.LocationResponse;
 
 public interface LocationService {
@@ -14,6 +15,9 @@ public interface LocationService {
     LocationResponse getById(Long id);
 
     List<LocationResponse> getAll();
+    List<LocationNameResponse> getByLocationName();
+    
+    List<LocationNameResponse> searchLocations(String query);
 
     void delete(Long id);
 

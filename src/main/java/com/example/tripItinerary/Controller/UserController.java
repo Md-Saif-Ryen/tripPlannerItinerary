@@ -55,7 +55,7 @@ public class UserController {
                 ApiResponse.success(userService.getById(id)));
     }
 
-    @GetMapping
+    @GetMapping("/getAll")
     public ResponseEntity<ApiResponse<List<UserResponse>>> getAll() {
 
         return ResponseEntity.ok(

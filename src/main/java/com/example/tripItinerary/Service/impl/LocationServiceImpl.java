@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.tripItinerary.DTO.request.LocationRequest;
+import com.example.tripItinerary.DTO.response.LocationNameResponse;
 import com.example.tripItinerary.DTO.response.LocationResponse;
 import com.example.tripItinerary.Entity.Location;
 import com.example.tripItinerary.Mapper.LocationMapper;
@@ -86,6 +87,35 @@ public class LocationServiceImpl implements LocationService {
                         "Location not found with id : " + id));
 
         locationRepository.delete(location);
+    }
+
+    @Override
+    public List<LocationNameResponse> getByLocationName() {
+
+        return locationRepository.findAll()
+                .stream()
+                .map(location -> new LocationNameResponse(
+                        location.getId(),
+                        location.getCityName(),
+                        location.getStateName()))
+                .toList();
+    }
+
+    @Override
+    public List<LocationNameResponse> searchLocations(String query) {
+
+        if (query == null || query.trim().isEmpty()) {
+            return List.of();
+        }
+
+        return locationRepository
+                .findByCityNameContainingIgnoreCase(query.trim())
+                .stream()
+                .map(location -> new LocationNameResponse(
+                        location.getId(),
+                        location.getCityName(),
+                        location.getStateName()))
+                .toList();
     }
 
 }
