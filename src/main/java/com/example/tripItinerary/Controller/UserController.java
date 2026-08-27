@@ -8,6 +8,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.tripItinerary.DTO.request.UserRequest;
+import com.example.tripItinerary.DTO.request.userUpdateRequest;
 import com.example.tripItinerary.DTO.response.ApiResponse;
 import com.example.tripItinerary.DTO.response.UserResponse;
 import com.example.tripItinerary.Service.UserService;
@@ -39,7 +40,7 @@ public class UserController {
     @PutMapping("/updateById/{id}")
     public ResponseEntity<ApiResponse<UserResponse>> update(
             @PathVariable Long id,
-            @Valid @RequestBody UserRequest request) {
+            @Valid @RequestBody userUpdateRequest request) {
 
         UserResponse response = userService.update(id, request);
 

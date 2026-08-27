@@ -49,9 +49,11 @@ public class SecurityConfig {
 
     }
 
+    @SuppressWarnings("deprecation")
     @Bean
     AuthenticationProvider authenticationProvider() {
 
+        @SuppressWarnings("deprecation")
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
 
         provider.setUserDetailsService(userDetailsService);
@@ -98,10 +100,12 @@ public class SecurityConfig {
                         // Authentication
                         .requestMatchers("/api/v1/auth/**",
                                 "/api/v1/users/**",
-                            "/api/v1/hotels/**",
-                            "/api/v1/restaurants/**",
+                                "/api/v1/hotels/**",
+                                "/api/v1/restaurants/**",
                                 "/api/itineraries/**",
                                 "/api/v1/locations/**",
+                                "/api/v1/hotel-images/**",
+                                "/api/v1/hotel-reviews/**",
                                 "/api/v1/tourist-places/**")
                         .permitAll()
 

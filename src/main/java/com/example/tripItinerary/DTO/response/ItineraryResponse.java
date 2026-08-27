@@ -10,7 +10,7 @@ import com.example.tripItinerary.enums.TravelType;
 
 import lombok.*;
 
-@Getter
+@Data
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,7 +18,9 @@ import lombok.*;
 public class ItineraryResponse {
 
     private Long id;
+    private String selectionId;
 
+    private Integer optionNumber;
     private Long userId;
     private Long locationId;
     private String locationName;

@@ -5,12 +5,13 @@ import java.util.List;
 
 import com.example.tripItinerary.DTO.request.ItineraryRequest;
 import com.example.tripItinerary.DTO.response.ItineraryResponse;
+import com.example.tripItinerary.DTO.response.UserSummaryResponse;
 import com.example.tripItinerary.enums.ItineraryStatus;
 
 public interface ItineraryService {
 
     // Core CRUD operations
-    ItineraryResponse create(ItineraryRequest request);
+    List<ItineraryResponse> create(ItineraryRequest request);
 
     ItineraryResponse update(Long id, ItineraryRequest request);
 
@@ -35,4 +36,13 @@ public interface ItineraryService {
 
     List<ItineraryResponse> searchItineraries(String keyword);
     List<ItineraryResponse> getItineraryByUserId(Long userId );
+     UserSummaryResponse getUserSummaryByUserId(Long userId );
+
+     ItineraryResponse selectGeneratedItinerary(
+             Long userId,
+             String selectionId);
+
+     ItineraryResponse markPlaceCompleted(
+             Long itineraryPlaceId);
+    
 }

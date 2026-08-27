@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.tripItinerary.DTO.request.UserRequest;
+import com.example.tripItinerary.DTO.request.userUpdateRequest;
 import com.example.tripItinerary.DTO.response.UserResponse;
 import com.example.tripItinerary.Entity.User;
 import com.example.tripItinerary.Mapper.UserMapper;
@@ -46,7 +47,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse update(@NonNull Long id, UserRequest request) {
+    public UserResponse update(@NonNull Long id, userUpdateRequest request) {
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id : " + id));
@@ -58,13 +59,7 @@ public class UserServiceImpl implements UserService {
         }
 
         user.setFullName(request.getFullName());
-        user.setEmail(request.getEmail());
-        user.setPhoneNumber(request.getPhoneNumber());
         user.setProfileImage(request.getProfileImage());
-
-        if (request.getPassword() != null && !request.getPassword().isBlank()) {
-            user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        }
 
         return userMapper.toResponse(userRepository.save(user));
     }

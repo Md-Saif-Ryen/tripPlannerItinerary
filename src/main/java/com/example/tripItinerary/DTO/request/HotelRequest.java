@@ -72,5 +72,6 @@ public class HotelRequest {
      * Existing Amenity IDs
      */
     private List<Long> amenityIds;
+    private List<String> images;
 
 }
