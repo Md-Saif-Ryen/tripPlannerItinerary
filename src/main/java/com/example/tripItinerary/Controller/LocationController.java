@@ -12,6 +12,7 @@ import com.example.tripItinerary.DTO.response.ApiResponse;
 import com.example.tripItinerary.DTO.response.LocationNameResponse;
 import com.example.tripItinerary.DTO.response.LocationResponse;
 import com.example.tripItinerary.DTO.response.MostSearchedLocationResponse;
+import com.example.tripItinerary.Entity.MissingLocation;
 import com.example.tripItinerary.Service.LocationService;
 
 import jakarta.validation.Valid;
@@ -148,5 +149,18 @@ public class LocationController {
                                                 "Top searched locations fetched successfully.",
                                                 locationService
                                                                 .getTopSearchedLocations()));
+        }
+
+        // ============================================================
+        // GET MISSING LOCATIONS FOR ADMIN
+        // ============================================================
+
+        @GetMapping("/missingLocationa")
+        public ResponseEntity<ApiResponse<List<MissingLocation>>> getMissingLocations() {
+
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                "Missing locations fetched successfully.",
+                                                locationService.getPendingLocations()));
         }
 }

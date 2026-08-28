@@ -6,6 +6,7 @@ import com.example.tripItinerary.DTO.request.LocationRequest;
 import com.example.tripItinerary.DTO.response.LocationNameResponse;
 import com.example.tripItinerary.DTO.response.LocationResponse;
 import com.example.tripItinerary.DTO.response.MostSearchedLocationResponse;
+import com.example.tripItinerary.Entity.MissingLocation;
 
 public interface LocationService {
 
@@ -22,5 +23,6 @@ public interface LocationService {
 
     void delete(Long id);
     List<MostSearchedLocationResponse> getTopSearchedLocations();
+    List<MissingLocation> getPendingLocations();
 
 }
