@@ -53,7 +53,6 @@ public class ItineraryController {
                 try {
 
                         // Long userId = securityUtils.getCurrentUserId();
-                    
 
                         UserSummaryResponse summary = itineraryService.getUserSummaryByUserId(id);
 
@@ -67,7 +66,6 @@ public class ItineraryController {
 
                 } catch (Exception e) {
 
-
                         return ResponseEntity
                                         .status(HttpStatus.INTERNAL_SERVER_ERROR)
                                         .body(
@@ -79,7 +77,6 @@ public class ItineraryController {
                                                                         .build());
                 }
         }
-
 
         @PutMapping("/updateById/{id}")
         public ResponseEntity<ApiResponse<ItineraryResponse>> update(
@@ -111,7 +108,6 @@ public class ItineraryController {
                                                 itineraryService.getMyItineraries()));
         }
 
-
         @PostMapping("/select/{selectionId}")
         public ItineraryResponse select(
                         @PathVariable String selectionId,
@@ -122,7 +118,6 @@ public class ItineraryController {
                                 selectionId);
         }
 
-        
         @PutMapping("/places/{itineraryPlaceId}/complete")
         public ItineraryResponse completePlace(
                         @PathVariable Long itineraryPlaceId) {
@@ -141,5 +136,7 @@ public class ItineraryController {
                                                 "Itinerary deleted successfully.",
                                                 null));
         }
+
+       
 
 }

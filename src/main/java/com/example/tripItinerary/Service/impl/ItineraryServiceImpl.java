@@ -161,6 +161,7 @@ public class ItineraryServiceImpl implements ItineraryService {
                 // STEP 2: FETCH USER
                 // ======================================================
 
+                @SuppressWarnings("null")
                 User user = getUser(
                                 request.getUserId());
 
@@ -631,6 +632,7 @@ public class ItineraryServiceImpl implements ItineraryService {
 
                         ItineraryDay savedDay = savedDays.get(i);
 
+                        @SuppressWarnings("null")
                         ItineraryDay oldDay = days.get(i);
 
                         if (oldDay.getItineraryPlaces() == null ||

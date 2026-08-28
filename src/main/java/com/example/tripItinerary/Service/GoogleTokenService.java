@@ -1,6 +1,5 @@
 package com.example.tripItinerary.Service;
 
-
 import java.util.Collections;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -18,72 +17,72 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class GoogleTokenService {
 
-    private final String googleClientId;
+        private final String googleClientId;
 
-    public GoogleTokenService(
-            @Value("${google.client-id}") String googleClientId) {
-        this.googleClientId = googleClientId;
-    }
-
-    public GoogleUserInfo verify(String idTokenString) {
-
-        try {
-
-            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
-                    GoogleNetHttpTransport.newTrustedTransport(),
-                    GsonFactory.getDefaultInstance())
-                    .setAudience(
-                            Collections.singletonList(
-                                    googleClientId))
-                    .build();
-
-            GoogleIdToken idToken = verifier.verify(idTokenString);
-
-            if (idToken == null) {
-                throw new IllegalArgumentException(
-                        "Invalid Google ID token.");
-            }
-
-            Payload payload = idToken.getPayload();
-
-            String googleId = payload.getSubject();
-            String email = payload.getEmail();
-
-            Boolean emailVerified = payload.getEmailVerified();
-
-            String name = (String) payload.get("name");
-
-            String picture = (String) payload.get("picture");
-
-            if (googleId == null ||
-                    email == null ||
-                    !Boolean.TRUE.equals(emailVerified)) {
-
-                throw new IllegalArgumentException(
-                        "Google account verification failed.");
-            }
-
-            return new GoogleUserInfo(
-                    googleId,
-                    email,
-                    name,
-                    picture);
-
-        } catch (Exception e) {
-
-            log.error(
-                    "Google token verification failed",
-                    e);
-
-            throw new IllegalArgumentException(
-                    "Invalid Google authentication.");
+        public GoogleTokenService(
+                        @Value("${google.client-id}") String googleClientId) {
+                this.googleClientId = googleClientId;
         }
-    }
 
-    public record GoogleUserInfo(
-            String googleId,
-            String email,
-            String name,
-            String picture) {
-    }
+        public GoogleUserInfo verify(String idTokenString) {
+
+                try {
+
+                        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
+                                        GoogleNetHttpTransport.newTrustedTransport(),
+                                        GsonFactory.getDefaultInstance())
+                                        .setAudience(
+                                                        Collections.singletonList(
+                                                                        googleClientId))
+                                        .build();
+
+                        GoogleIdToken idToken = verifier.verify(idTokenString);
+
+                        if (idToken == null) {
+                                throw new IllegalArgumentException(
+                                                "Invalid Google ID token.");
+                        }
+
+                        Payload payload = idToken.getPayload();
+
+                        String googleId = payload.getSubject();
+                        String email = payload.getEmail();
+
+                        Boolean emailVerified = payload.getEmailVerified();
+
+                        String name = (String) payload.get("name");
+
+                        String picture = (String) payload.get("picture");
+
+                        if (googleId == null ||
+                                        email == null ||
+                                        !Boolean.TRUE.equals(emailVerified)) {
+
+                                throw new IllegalArgumentException(
+                                                "Google account verification failed.");
+                        }
+
+                        return new GoogleUserInfo(
+                                        googleId,
+                                        email,
+                                        name,
+                                        picture);
+
+                } catch (Exception e) {
+
+                        log.error(
+                                        "Google token verification failed",
+                                        e);
+
+                        throw new IllegalArgumentException(
+                                        "Invalid Google authentication.");
+                }
+        }
+
+        public record GoogleUserInfo(
+                        String googleId,
+                        String email,
+                        String name,
+                        String picture) {
+        }
 }

@@ -106,14 +106,12 @@ public class TouristPlace {
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
 
-    
-
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     // ================= Relationships =================
-@JsonIgnore
+    @JsonIgnore
     @Builder.Default
     @OneToMany(mappedBy = "touristPlace", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TouristPlaceImage> images = new ArrayList<>();

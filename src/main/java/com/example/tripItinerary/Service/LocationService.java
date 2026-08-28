@@ -5,6 +5,7 @@ import java.util.List;
 import com.example.tripItinerary.DTO.request.LocationRequest;
 import com.example.tripItinerary.DTO.response.LocationNameResponse;
 import com.example.tripItinerary.DTO.response.LocationResponse;
+import com.example.tripItinerary.DTO.response.MostSearchedLocationResponse;
 
 public interface LocationService {
 
@@ -20,5 +21,6 @@ public interface LocationService {
     List<LocationNameResponse> searchLocations(String query);
 
     void delete(Long id);
+    List<MostSearchedLocationResponse> getTopSearchedLocations();
 
 }

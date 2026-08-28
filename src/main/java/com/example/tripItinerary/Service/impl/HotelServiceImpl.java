@@ -7,12 +7,10 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.tripItinerary.DTO.request.HotelImageRequest;
 import com.example.tripItinerary.DTO.request.HotelRequest;
 import com.example.tripItinerary.DTO.response.HotelResponse;
 import com.example.tripItinerary.Entity.Amenity;
 import com.example.tripItinerary.Entity.Hotel;
-import com.example.tripItinerary.Entity.HotelImage;
 import com.example.tripItinerary.Entity.Location;
 import com.example.tripItinerary.Mapper.HotelMapper;
 import com.example.tripItinerary.Repo.AmenityRepository;

@@ -11,6 +11,7 @@ import com.example.tripItinerary.DTO.request.LocationRequest;
 import com.example.tripItinerary.DTO.response.ApiResponse;
 import com.example.tripItinerary.DTO.response.LocationNameResponse;
 import com.example.tripItinerary.DTO.response.LocationResponse;
+import com.example.tripItinerary.DTO.response.MostSearchedLocationResponse;
 import com.example.tripItinerary.Service.LocationService;
 
 import jakarta.validation.Valid;
@@ -23,66 +24,129 @@ import lombok.RequiredArgsConstructor;
 @CrossOrigin(origins = "*")
 public class LocationController {
 
-    private final LocationService locationService;
+        private final LocationService locationService;
 
-    @PostMapping("/create_location")
-    public ResponseEntity<ApiResponse<LocationResponse>> create(
-            @Valid @RequestBody LocationRequest request) {
+        // ============================================================
+        // CREATE LOCATION
+        // ============================================================
 
-        LocationResponse response = locationService.create(request);
-        System.out.println("Creating location with state: " + request.getStateName() + ", city: " + request.getCityName() + ", address: " + request.getAddress());
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Location created successfully.", response));
-    }
+        @PostMapping("/create_location")
+        public ResponseEntity<ApiResponse<LocationResponse>> create(
+                        @Valid @RequestBody LocationRequest request) {
 
-    @PutMapping("/updateById/{id}")
-    public ResponseEntity<ApiResponse<LocationResponse>> update(
-            @PathVariable Long id,
-            @Valid @RequestBody LocationRequest request) {
+                LocationResponse response = locationService.create(request);
 
-        LocationResponse response = locationService.update(id, request);
+                System.out.println(
+                                "Creating location with state: "
+                                                + request.getStateName()
+                                                + ", city: "
+                                                + request.getCityName()
+                                                + ", address: "
+                                                + request.getAddress());
 
-        return ResponseEntity.ok(
-                ApiResponse.success("Location updated successfully.", response));
-    }
+                return ResponseEntity
+                                .status(HttpStatus.CREATED)
+                                .body(
+                                                ApiResponse.success(
+                                                                "Location created successfully.",
+                                                                response));
+        }
 
-    @GetMapping("/getById/{id}")
-    public ResponseEntity<ApiResponse<LocationResponse>> getById(
-            @PathVariable Long id) {
+        // ============================================================
+        // UPDATE LOCATION
+        // ============================================================
 
-        return ResponseEntity.ok(
-                ApiResponse.success(locationService.getById(id)));
-    }
+        @PutMapping("/updateById/{id}")
+        public ResponseEntity<ApiResponse<LocationResponse>> update(
+                        @PathVariable Long id,
+                        @Valid @RequestBody LocationRequest request) {
 
-    @GetMapping("/getAll")
-    public ResponseEntity<ApiResponse<List<LocationResponse>>> getAll() {
+                LocationResponse response = locationService.update(id, request);
 
-        return ResponseEntity.ok(
-                ApiResponse.success(locationService.getAll()));
-    }
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                "Location updated successfully.",
+                                                response));
+        }
 
-    @DeleteMapping("/deleteById/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(
-            @PathVariable Long id) {
+        // ============================================================
+        // GET LOCATION BY ID
+        // ============================================================
 
-        locationService.delete(id);
+        @GetMapping("/getById/{id}")
+        public ResponseEntity<ApiResponse<LocationResponse>> getById(
+                        @PathVariable Long id) {
 
-        return ResponseEntity.ok(
-                ApiResponse.success("Location deleted successfully.", null));
-    }
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                locationService.getById(id)));
+        }
 
-    @GetMapping("/fetchByLocationName")
+        // ============================================================
+        // GET ALL LOCATIONS
+        // ============================================================
+
+        @GetMapping("/getAll")
+        public ResponseEntity<ApiResponse<List<LocationResponse>>> getAll() {
+
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                locationService.getAll()));
+        }
+
+        // ============================================================
+        // DELETE LOCATION
+        // ============================================================
+
+        @DeleteMapping("/deleteById/{id}")
+        public ResponseEntity<ApiResponse<Void>> delete(
+                        @PathVariable Long id) {
+
+                locationService.delete(id);
+
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                "Location deleted successfully.",
+                                                null));
+        }
+
+        // ============================================================
+        // FETCH LOCATION NAMES
+        // ============================================================
+
+        @GetMapping("/fetchByLocationName")
         public ResponseEntity<ApiResponse<List<LocationNameResponse>>> getByLocationName() {
 
-        return ResponseEntity.ok(
-                ApiResponse.success(locationService.getByLocationName()));
-    }
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                locationService.getByLocationName()));
+        }
 
-    @GetMapping("/search")
-    public ResponseEntity<ApiResponse<List<LocationNameResponse>>> searchLocations(
-                    @RequestParam String query) {
+        // ============================================================
+        // SEARCH LOCATION
+        // Existing API - keep unchanged
+        // ============================================================
 
-            return ResponseEntity.ok(
-                            ApiResponse.success(locationService.searchLocations(query)));
-    }
+        @GetMapping("/search")
+        public ResponseEntity<ApiResponse<List<LocationNameResponse>>> searchLocations(
+                        @RequestParam String query) {
+
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                locationService.searchLocations(query)));
+        }
+
+        // ============================================================
+        // TOP 5 MOST SEARCHED LOCATIONS
+        // ============================================================
+
+        @GetMapping("/search/top")
+        public ResponseEntity<ApiResponse<List<MostSearchedLocationResponse>>> getTopSearchedLocations() {
+
+                return ResponseEntity.ok(
+                                ApiResponse.success(
+                                                "Top searched locations fetched successfully.",
+                                                locationService
+                                                                .getTopSearchedLocations()));
+        }
 }
