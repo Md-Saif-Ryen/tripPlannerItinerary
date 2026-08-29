@@ -1,9 +1,12 @@
 package com.example.tripItinerary.Controller;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 public class LocationController {
 
         private final LocationService locationService;
+        private final JdbcTemplate jdbcTemplate;
 
         // ============================================================
         // CREATE LOCATION
@@ -167,5 +171,21 @@ public class LocationController {
         @GetMapping("/cronjob")
         public String systemAwake() {
                 return "System is awake";
+        }
+
+        @GetMapping("/debug/db")
+        public Map<String, Object> debugDatabase() {
+
+                Map<String, Object> result = new LinkedHashMap<>();
+
+                result.put("database",
+                                jdbcTemplate.queryForObject("SELECT DATABASE()", String.class));
+
+                result.put("locationCount",
+                                jdbcTemplate.queryForObject(
+                                                "SELECT COUNT(*) FROM locations",
+                                                Long.class));
+
+                return result;
         }
 }
