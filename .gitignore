@@ -4,9 +4,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-# Spring Boot environment/config
-src/main/resources/application.properties
-
+.env
 ### STS ###
 .apt_generated
 .classpath

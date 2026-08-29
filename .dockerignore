@@ -1,10 +1,9 @@
-target/*.original
-
+target/
 .git
 .gitignore
 .idea
 .vscode
 *.iml
 .env
-src/main/resources/application.properties
+*.log
 README.md

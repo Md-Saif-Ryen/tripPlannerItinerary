@@ -1,13 +1,25 @@
-FROM eclipse-temurin:17-jre-alpine
+# =========================
+# Build Stage
+# =========================
+FROM maven:3.9-eclipse-temurin-17 AS build
 
-# Working directory inside container
 WORKDIR /app
 
-# Copy Spring Boot JAR
-COPY target/tripItinerary-0.0.1-SNAPSHOT.jar app.jar
+COPY pom.xml .
+COPY src ./src
 
-# Render listens on port 8080
+RUN mvn clean package -DskipTests
+
+
+# =========================
+# Runtime Stage
+# =========================
+FROM eclipse-temurin:17-jre-alpine
+
+WORKDIR /app
+
+COPY --from=build /app/target/tripItinerary-0.0.1-SNAPSHOT.jar app.jar
+
 EXPOSE 8080
 
-# JVM optimization for containers
-ENTRYPOINT ["java","-XX:+UseContainerSupport","-XX:MaxRAMPercentage=75.0","-jar","app.jar"]
+ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-jar", "app.jar"]
