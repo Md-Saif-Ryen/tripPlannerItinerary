@@ -1,0 +1,10 @@
+target/*.original
+
+.git
+.gitignore
+.idea
+.vscode
+*.iml
+.env
+src/main/resources/application.properties
+README.md
