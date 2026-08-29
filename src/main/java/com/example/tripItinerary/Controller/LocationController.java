@@ -163,4 +163,9 @@ public class LocationController {
                                                 "Missing locations fetched successfully.",
                                                 locationService.getPendingLocations()));
         }
+
+        @GetMapping("/cronjob")
+        public String systemAwake() {
+                return "System is awake";
+        }
 }
