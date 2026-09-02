@@ -1,6 +1,8 @@
 package com.example.tripItinerary.DTO.response;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.example.tripItinerary.enums.Role;
 
@@ -27,12 +29,21 @@ public class UserResponse {
 
     private String phoneNumber;
 
+    private String gender;
+
+    private LocalDate dob;
+
     private Role role;
 
     private Boolean active;
 
+    private Boolean isEmailVerified;
+
+    private Boolean isMobileVerified;
+
+    private List<String> fcmTokens;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
-
 }

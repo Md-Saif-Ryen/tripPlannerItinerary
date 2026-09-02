@@ -1,9 +1,13 @@
 package com.example.tripItinerary.Service.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.tripItinerary.DTO.GoogleUserInfo;
 import com.example.tripItinerary.DTO.request.GoogleLoginRequest;
@@ -25,166 +29,278 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class AuthServiceImpl implements AuthService {
 
-    private final UserRepository userRepository;
-    private final UserMapper userMapper;
-    private final GoogleAuthService googleAuthService;
-    private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
+        private static final int MAX_FCM_TOKENS = 5;
 
-    private final JwtService jwtService;
-    private final SecurityUtils securityUtils;
+        private final UserRepository userRepository;
+        private final UserMapper userMapper;
+        private final GoogleAuthService googleAuthService;
+        private final PasswordEncoder passwordEncoder;
+        private final AuthenticationManager authenticationManager;
+        private final JwtService jwtService;
+        private final SecurityUtils securityUtils;
 
-    @Override
-    public AuthResponse register(RegisterRequest request) {
+        // ============================================================
+        // ADD / UPDATE FCM TOKEN
+        // ============================================================
 
-        if (userRepository.existsByEmail(request.getEmail())) {
+        private void addFcmToken(
+                        User user,
+                        String fcmToken) {
 
-            throw new RuntimeException("Email already exists.");
+                if (fcmToken == null ||
+                                fcmToken.trim().isEmpty()) {
+                        return;
+                }
 
+                String token = fcmToken.trim();
+
+                if (user.getFcmTokens() == null) {
+                        user.setFcmTokens(new ArrayList<>());
+                }
+
+                List<String> tokens = user.getFcmTokens();
+
+                // Remove duplicate token.
+                tokens.remove(token);
+
+                // New token always goes to top.
+                tokens.add(0, token);
+
+                // Keep only latest 5.
+                while (tokens.size() > MAX_FCM_TOKENS) {
+                        tokens.remove(tokens.size() - 1);
+                }
         }
 
-        User user = userMapper.toEntity(request);
+        // ============================================================
+        // REGISTER
+        // ============================================================
 
-        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        @Override
+        public AuthResponse register(RegisterRequest request) {
 
-        user.setRole(Role.USER);
+                String email = request.getEmail()
+                                .trim()
+                                .toLowerCase();
 
-        user.setActive(true);
+                if (userRepository.existsByEmail(email)) {
+                        throw new RuntimeException(
+                                        "Email already exists.");
+                }
 
-        user = userRepository.save(user);
+                User user = userMapper.toEntity(request);
 
-        String token = jwtService.generateToken(new CustomUserDetails(user));
+                // Make sure normalized email is stored.
+                user.setEmail(email);
 
-        return AuthResponse.builder()
-                .success(true)
-                .message("Registration successful.")
-                .token(token)
-                .tokenType("Bearer")
-                .user(userMapper.toResponse(user))
-                .build();
+                // Password hash.
+                user.setPasswordHash(
+                                passwordEncoder.encode(
+                                                request.getPassword()));
 
-    }
+                user.setRole(Role.USER);
+                user.setActive(true);
 
-    @Override
-    public AuthResponse login(LoginRequest request) {
+                // --------------------------------------------------------
+                // Verification defaults
+                // --------------------------------------------------------
 
-        authenticationManager.authenticate(
+                user.setIsEmailVerified(false);
+                user.setIsMobileVerified(false);
 
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword())
+                // --------------------------------------------------------
+                // Optional fields
+                // --------------------------------------------------------
 
-        );
+                user.setGender(request.getGender());
+                user.setDob(request.getDob());
+                user.setPhoneNumber(request.getPhoneNumber());
+                user.setProfileImage(request.getProfileImage());
 
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found."));
+                user = userRepository.save(user);
 
-        String token = jwtService.generateToken(new CustomUserDetails(user));
+                String token = jwtService.generateToken(
+                                new CustomUserDetails(user));
 
-        return AuthResponse.builder()
-                .success(true)
-                .message("Login successful.")
-                .token(token)
-                .tokenType("Bearer")
-                .fcmToken("asdfjsdfkjadhsfjkadnsfkjahsfeejwkdsfulidsvj")
-                .user(userMapper.toResponse(user))
-                .build();
-
-    }
-
-    @Override
-    public AuthResponse googleLogin(GoogleLoginRequest request) {
-
-        // ---------------------------------------------------------
-        // 1. VERIFY GOOGLE ID TOKEN
-        // ---------------------------------------------------------
-
-        GoogleUserInfo googleUser = googleAuthService.verifyToken(
-                request.getIdToken());
-
-        // ---------------------------------------------------------
-        // 2. FIND EXISTING USER BY EMAIL
-        // ---------------------------------------------------------
-
-        User user = userRepository.findByEmail(
-                googleUser.getEmail()).orElse(null);
-
-        // ---------------------------------------------------------
-        // 3. CREATE USER IF NOT EXISTS
-        // ---------------------------------------------------------
-
-        if (user == null) {
-
-            user = new User();
-
-            user.setEmail(
-                    googleUser.getEmail());
-
-            user.setFullName(
-                    googleUser.getName());
-
-            user.setProfileImage(
-                    googleUser.getPicture());
-
-            user.setRole(Role.USER);
-
-            user.setActive(true);
-
-            /*
-             * Google users don't authenticate using your
-             * normal password.
-             *
-             * If passwordHash is mandatory in your Entity/DB,
-             * we will handle that separately.
-             */
-
-            user = userRepository.save(user);
+                return AuthResponse.builder()
+                                .success(true)
+                                .message("Registration successful.")
+                                .token(token)
+                                .tokenType("Bearer")
+                                .fcmToken(
+                                                getLatestFcmToken(user))
+                                .user(
+                                                userMapper.toResponse(user))
+                                .build();
         }
 
-        // ---------------------------------------------------------
-        // 4. CHECK ACCOUNT STATUS
-        // ---------------------------------------------------------
+        // ============================================================
+        // LOGIN
+        // ============================================================
 
-        if (!user.getActive()) {
+        @Override
+        public AuthResponse login(LoginRequest request) {
 
-            throw new RuntimeException(
-                    "User account is inactive.");
+                String email = request.getEmail()
+                                .trim()
+                                .toLowerCase();
+
+                authenticationManager.authenticate(
+                                new UsernamePasswordAuthenticationToken(
+                                                email,
+                                                request.getPassword()));
+
+                User user = userRepository
+                                .findByEmail(email)
+                                .orElseThrow(
+                                                () -> new RuntimeException(
+                                                                "User not found."));
+
+                if (!Boolean.TRUE.equals(user.getActive())) {
+                        throw new RuntimeException(
+                                        "User account is inactive.");
+                }
+
+                // --------------------------------------------------------
+                // Add latest FCM token
+                // --------------------------------------------------------
+
+                addFcmToken(
+                                user,
+                                request.getFcmToken());
+
+                user = userRepository.save(user);
+
+                String token = jwtService.generateToken(
+                                new CustomUserDetails(user));
+
+                return AuthResponse.builder()
+                                .success(true)
+                                .message("Login successful.")
+                                .token(token)
+                                .tokenType("Bearer")
+                                .fcmToken(
+                                                getLatestFcmToken(user))
+                                .user(
+                                                userMapper.toResponse(user))
+                                .build();
         }
 
-        // ---------------------------------------------------------
-        // 5. GENERATE YOUR APPLICATION JWT
-        // ---------------------------------------------------------
+        // ============================================================
+        // GOOGLE LOGIN
+        // ============================================================
 
-        String token = jwtService.generateToken(
-                new CustomUserDetails(user));
+        @Override
+        public AuthResponse googleLogin(
+                        GoogleLoginRequest request) {
 
-        // ---------------------------------------------------------
-        // 6. RETURN SAME AUTH RESPONSE AS NORMAL LOGIN
-        // ---------------------------------------------------------
+                GoogleUserInfo googleUser = googleAuthService.verifyToken(
+                                request.getIdToken());
 
-        return AuthResponse.builder()
-                .success(true)
-                .message("Google login successful.")
-                .token(token)
-                .tokenType("Bearer")
-                .fcmToken(
-                        "asdfjsdfkjadhsfjkadnsfkjahsfeejwkdsfulidsvj")
-                .user(
-                        userMapper.toResponse(user))
-                .build();
-    }
+                String email = googleUser.getEmail()
+                                .trim()
+                                .toLowerCase();
 
-    @Override
-    public UserResponse getCurrentUser() {
+                User user = userRepository
+                                .findByEmail(email)
+                                .orElse(null);
 
-        User user = securityUtils.getCurrentUser();
+                // --------------------------------------------------------
+                // CREATE NEW GOOGLE USER
+                // --------------------------------------------------------
 
-        System.out.println(
-                "Current User: " + user.getFullName() + ", Role: " + user.getRole() + ", Active: " + user.getActive());
-        return userMapper.toResponse(user);
+                if (user == null) {
 
-    }
+                        user = new User();
 
+                        user.setEmail(email);
+
+                        user.setFullName(
+                                        googleUser.getName());
+
+                        user.setProfileImage(
+                                        googleUser.getPicture());
+
+                        user.setRole(Role.USER);
+                        user.setActive(true);
+
+                        // Google verified email.
+                        user.setIsEmailVerified(true);
+
+                        // Mobile not verified.
+                        user.setIsMobileVerified(false);
+
+                        addFcmToken(
+                                        user,
+                                        request.getFcmToken());
+
+                        user = userRepository.save(user);
+
+                } else {
+
+                        if (!Boolean.TRUE.equals(
+                                        user.getActive())) {
+                                throw new RuntimeException(
+                                                "User account is inactive.");
+                        }
+
+                        addFcmToken(
+                                        user,
+                                        request.getFcmToken());
+
+                        user = userRepository.save(user);
+                }
+
+                String token = jwtService.generateToken(
+                                new CustomUserDetails(user));
+
+                return AuthResponse.builder()
+                                .success(true)
+                                .message("Google login successful.")
+                                .token(token)
+                                .tokenType("Bearer")
+                                .fcmToken(
+                                                getLatestFcmToken(user))
+                                .user(
+                                                userMapper.toResponse(user))
+                                .build();
+        }
+
+        // ============================================================
+        // CURRENT USER
+        // ============================================================
+
+        @Override
+        @Transactional(readOnly = true)
+        public UserResponse getCurrentUser() {
+
+                User user = securityUtils.getCurrentUser();
+
+                System.out.println(
+                                "Current User: "
+                                                + user.getFullName()
+                                                + ", Role: "
+                                                + user.getRole()
+                                                + ", Active: "
+                                                + user.getActive());
+
+                return userMapper.toResponse(user);
+        }
+
+        // ============================================================
+        // LATEST FCM TOKEN
+        // ============================================================
+
+        private String getLatestFcmToken(User user) {
+
+                if (user.getFcmTokens() == null ||
+                                user.getFcmTokens().isEmpty()) {
+                        return null;
+                }
+
+                return user.getFcmTokens().get(0);
+        }
 }

@@ -12,30 +12,57 @@ import com.example.tripItinerary.DTO.response.UserResponse;
 @Mapper(config = MapperConfiguration.class)
 public interface UserMapper {
 
+    // ============================================================
+    // UserRequest -> User
+    // ============================================================
+
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "passwordHash", ignore = true)
     @Mapping(target = "role", ignore = true)
     @Mapping(target = "active", ignore = true)
+
+    @Mapping(target = "isEmailVerified", ignore = true)
+    @Mapping(target = "isMobileVerified", ignore = true)
+
+    @Mapping(target = "fcmTokens", ignore = true)
+
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+
     @Mapping(target = "itineraries", ignore = true)
     @Mapping(target = "touristPlaceReviews", ignore = true)
     @Mapping(target = "restaurantReviews", ignore = true)
     @Mapping(target = "hotelReviews", ignore = true)
+
     User toEntity(UserRequest request);
 
+    // ============================================================
+    // RegisterRequest -> User
+    // ============================================================
+
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "passwordHash", ignore = true)
     @Mapping(target = "role", ignore = true)
     @Mapping(target = "active", ignore = true)
+
+    @Mapping(target = "isEmailVerified", ignore = true)
+    @Mapping(target = "isMobileVerified", ignore = true)
+
+    @Mapping(target = "fcmTokens", ignore = true)
+
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+
     @Mapping(target = "itineraries", ignore = true)
     @Mapping(target = "touristPlaceReviews", ignore = true)
     @Mapping(target = "restaurantReviews", ignore = true)
     @Mapping(target = "hotelReviews", ignore = true)
+
     User toEntity(RegisterRequest request);
 
-    UserResponse toResponse(User user);
+    // ============================================================
+    // User -> UserResponse
+    // ============================================================
 
+    UserResponse toResponse(User user);
 }

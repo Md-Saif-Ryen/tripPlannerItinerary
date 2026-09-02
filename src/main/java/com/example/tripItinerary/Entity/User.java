@@ -1,5 +1,6 @@
 package com.example.tripItinerary.Entity;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +61,42 @@ public class User {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+     // ============================================================
+    // OPTIONAL USER INFORMATION
+    // ============================================================
 
+    @Column(length = 50)
+    private String gender;
+
+    @Column(name = "dob")
+    private LocalDate dob;
+
+    // ============================================================
+    // EMAIL / MOBILE VERIFICATION
+    // ============================================================
+
+    @Column(
+        name = "is_email_verified",
+        nullable = false
+    )
+    @Builder.Default
+    private Boolean isEmailVerified = false;
+
+    @Column(
+        name = "is_mobile_verified",
+        nullable = false
+    )
+    @Builder.Default
+    private Boolean isMobileVerified = false;
+
+
+    @ElementCollection
+    @CollectionTable(name = "user_fcm_tokens", joinColumns = @JoinColumn(name = "user_id"))
+    @OrderColumn(name = "token_order")
+    @Column(name = "fcm_token", nullable = false, length = 500)
+    @Builder.Default
+    private List<String> fcmTokens = new ArrayList<>();
+    
     // ===================== RELATIONSHIPS =====================
     @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

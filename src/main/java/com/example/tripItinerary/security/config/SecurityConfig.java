@@ -36,103 +36,109 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+        private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    private final JwtAuthenticationEntryPoint authenticationEntryPoint;
+        private final JwtAuthenticationEntryPoint authenticationEntryPoint;
 
-    private final UserDetailsService userDetailsService;
+        private final UserDetailsService userDetailsService;
 
-    @Bean
-    PasswordEncoder passwordEncoder() {
+        @Bean
+        PasswordEncoder passwordEncoder() {
 
-        return new BCryptPasswordEncoder();
+                return new BCryptPasswordEncoder();
 
-    }
-
-    @SuppressWarnings("deprecation")
-    @Bean
-    AuthenticationProvider authenticationProvider() {
+        }
 
         @SuppressWarnings("deprecation")
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        @Bean
+        AuthenticationProvider authenticationProvider() {
 
-        provider.setUserDetailsService(userDetailsService);
+                @SuppressWarnings("deprecation")
+                DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
 
-        provider.setPasswordEncoder(passwordEncoder());
+                provider.setUserDetailsService(userDetailsService);
 
-        return provider;
+                provider.setPasswordEncoder(passwordEncoder());
 
-    }
+                return provider;
 
-    @Bean
-    AuthenticationManager authenticationManager(
-            AuthenticationConfiguration configuration) throws Exception {
+        }
 
-        return configuration.getAuthenticationManager();
+        @Bean
+        AuthenticationManager authenticationManager(
+                        AuthenticationConfiguration configuration) throws Exception {
 
-    }
+                return configuration.getAuthenticationManager();
 
-    @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http)
-            throws Exception {
+        }
 
-        http
+        @Bean
+        SecurityFilterChain securityFilterChain(HttpSecurity http)
+                        throws Exception {
 
-                .csrf(csrf -> csrf.disable())
+                http
 
-                .cors(Customizer.withDefaults())
+                                .csrf(csrf -> csrf.disable())
 
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                .cors(Customizer.withDefaults())
 
-                .exceptionHandling(exception -> exception.authenticationEntryPoint(authenticationEntryPoint))
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                .authenticationProvider(authenticationProvider())
+                                .exceptionHandling(exception -> exception
+                                                .authenticationEntryPoint(authenticationEntryPoint))
 
-                .authorizeHttpRequests(auth -> auth
+                                .authenticationProvider(authenticationProvider())
 
-                        // Swagger
-                        .requestMatchers(
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/swagger-ui.html")
-                        .permitAll()
+                                .authorizeHttpRequests(auth -> auth
 
-                        // Authentication
-                        .requestMatchers("/api/v1/auth/**",
-                                "/api/v1/users/**",
-                                "/api/v1/hotels/**",
-                                "/api/v1/restaurants/**",
-                                "/api/itineraries/**",
-                                "/api/v1/locations/**",
-                                "/api/v1/hotel-images/**",
-                                "/api/v1/hotel-reviews/**",
-                                "/api/v1/tourist-places/**")
-                        .permitAll()
+                                                // Swagger
+                                                .requestMatchers(
+                                                                "/swagger-ui/**",
+                                                                "/v3/api-docs/**",
+                                                                "/swagger-ui.html")
+                                                .permitAll()
 
-                        // Public APIs
-                        .requestMatchers(HttpMethod.GET,
-                                "/api/v1/location/**",
-                                "/api/v1/tourist-place/**",
-                                "/api/v1/restaurant/**",
-                                "/api/v1/hotel/**")
-                        .permitAll()
+                                                // Authentication
+                                                .requestMatchers("/api/v1/auth/**",
+                                                                "/api/v1/users/**",
+                                                                "/api/v1/hotels/**",
+                                                                "/api/v1/restaurants/**",
+                                                                "/api/itineraries/**",
+                                                                "/api/v1/locations/**",
+                                                                "/api/v1/hotel-images/**",
+                                                                "/api/v1/hotel-reviews/**",
+                                                                "/api/v1/restaurant-images/**",
+                                                                "/api/v1/restaurant-reviews/**",
+                                                                "/api/v1/tourist-place-images/**",
+                                                                "/api/v1/tourist-place-reviews/**",
+                                                                "/api/v1/tourist-places/**")
+                                                .permitAll()
 
-                        // Admin APIs
-                        .requestMatchers("/api/v1/admin/**")
-                        .hasRole("ADMIN")
+                                                // Public APIs
+                                                .requestMatchers(HttpMethod.GET,
+                                                                "/api/v1/location/**",
+                                                                "/api/v1/tourist-place/**",
+                                                                "/api/v1/restaurant/**",
+                                                                "/api/v1/hotel/**")
+                                                .permitAll()
 
-                        // Everything else
-                        .anyRequest()
-                        .authenticated()
+                                                // Admin APIs
+                                                .requestMatchers("/api/v1/admin/**")
+                                                .hasRole("ADMIN")
 
-                )
+                                                // Everything else
+                                                .anyRequest()
+                                                .authenticated()
 
-                .addFilterBefore(
-                        jwtAuthenticationFilter,
-                        UsernamePasswordAuthenticationFilter.class);
+                                )
 
-        return http.build();
+                                .addFilterBefore(
+                                                jwtAuthenticationFilter,
+                                                UsernamePasswordAuthenticationFilter.class);
 
-    }
+                return http.build();
+
+        }
 
 }

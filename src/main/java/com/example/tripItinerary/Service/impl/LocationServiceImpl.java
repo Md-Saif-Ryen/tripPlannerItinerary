@@ -2,6 +2,7 @@ package com.example.tripItinerary.Service.impl;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -203,18 +204,32 @@ public class LocationServiceImpl implements LocationService {
                 }
 
                 // ========================================================
-                // LOCATION FOUND
+                // REMOVE DUPLICATE CITY NAMES
                 // ========================================================
 
                 return locations
                                 .stream()
-                                .map(location -> new LocationNameResponse(
-                                                location.getId(),
-                                                location.getCityName(),
-                                                location.getStateName()))
+                                .filter(location -> location.getCityName() != null &&
+                                                !location.getCityName().trim().isEmpty())
+                                .collect(Collectors.toMap(
+                                                location -> location.getCityName()
+                                                                .trim()
+                                                                .toLowerCase(),
+
+                                                location -> new LocationNameResponse(
+                                                                location.getId(),
+                                                                location.getCityName(),
+                                                                location.getStateName()),
+
+                                                // Same city milne par first record rakho
+                                                (existing, duplicate) -> existing,
+
+                                                // Order maintain rahe
+                                                LinkedHashMap::new))
+                                .values()
+                                .stream()
                                 .toList();
         }
-
         // ============================================================
         // TOP 5 MOST SEARCHED LOCATIONS
         // ============================================================
