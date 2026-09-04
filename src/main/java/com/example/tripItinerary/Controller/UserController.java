@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.tripItinerary.DTO.request.ResetPasswordRequest;
 import com.example.tripItinerary.DTO.request.UserRequest;
 import com.example.tripItinerary.DTO.request.userUpdateRequest;
 import com.example.tripItinerary.DTO.response.ApiResponse;
@@ -71,6 +72,16 @@ public class UserController {
 
         return ResponseEntity.ok(
                 ApiResponse.success("User deleted successfully.", null));
+    }
+
+    @PostMapping("/resetPassword")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request) {
+
+        userService.resetPassword(request);
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Password reset successfully.", null));
     }
 
 }

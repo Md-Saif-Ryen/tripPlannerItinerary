@@ -2,6 +2,7 @@ package com.example.tripItinerary.Service;
 
 import java.util.List;
 
+import com.example.tripItinerary.DTO.request.ResetPasswordRequest;
 import com.example.tripItinerary.DTO.request.UserRequest;
 import com.example.tripItinerary.DTO.request.userUpdateRequest;
 import com.example.tripItinerary.DTO.response.UserResponse;
@@ -17,5 +18,7 @@ public interface UserService {
     List<UserResponse> getAll();
 
     void delete(Long id);
+
+    void resetPassword(ResetPasswordRequest request);
 
 }

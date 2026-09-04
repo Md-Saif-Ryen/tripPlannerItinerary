@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -170,12 +171,16 @@ public class LocationServiceImpl implements LocationService {
         @Override
         public List<LocationNameResponse> searchLocations(String query) {
 
+                // ========================================================
+                // VALIDATE QUERY
+                // ========================================================
+
                 if (query == null || query.trim().isEmpty()) {
                         return List.of();
                 }
 
                 String originalQuery = query.trim();
-                String normalizedQuery = originalQuery.toLowerCase();
+                String normalizedQuery = originalQuery.toLowerCase(Locale.ROOT);
 
                 // ========================================================
                 // SAVE SEARCH HISTORY
@@ -198,7 +203,7 @@ public class LocationServiceImpl implements LocationService {
                 // LOCATION NOT FOUND
                 // ========================================================
 
-                if (locations.isEmpty()) {
+                if (locations == null || locations.isEmpty()) {
                         saveMissingLocation(originalQuery);
                         return List.of();
                 }
@@ -207,29 +212,39 @@ public class LocationServiceImpl implements LocationService {
                 // REMOVE DUPLICATE CITY NAMES
                 // ========================================================
 
-                return locations
-                                .stream()
+                return locations.stream()
+
+                                // Remove invalid city names
+                                // .filter(Objects::nonNull)
                                 .filter(location -> location.getCityName() != null &&
                                                 !location.getCityName().trim().isEmpty())
+
+                                // Convert Location -> LocationNameResponse
+                                .map(location -> new LocationNameResponse(
+                                                location.getId(),
+                                                location.getCityName().trim(),
+                                                location.getStateName()))
+
+                                // Remove duplicate city names ignoring case
                                 .collect(Collectors.toMap(
-                                                location -> location.getCityName()
+
+                                                response -> response.getCityName()
                                                                 .trim()
-                                                                .toLowerCase(),
+                                                                .toLowerCase(Locale.ROOT),
 
-                                                location -> new LocationNameResponse(
-                                                                location.getId(),
-                                                                location.getCityName(),
-                                                                location.getStateName()),
+                                                response -> response,
 
-                                                // Same city milne par first record rakho
+                                                // Duplicate city → first record keep
                                                 (existing, duplicate) -> existing,
 
-                                                // Order maintain rahe
+                                                // Preserve database order
                                                 LinkedHashMap::new))
+
                                 .values()
                                 .stream()
                                 .toList();
         }
+
         // ============================================================
         // TOP 5 MOST SEARCHED LOCATIONS
         // ============================================================

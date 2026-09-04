@@ -9,10 +9,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.tripItinerary.DTO.request.ResetPasswordRequest;
 import com.example.tripItinerary.DTO.request.UserRequest;
 import com.example.tripItinerary.DTO.request.userUpdateRequest;
 import com.example.tripItinerary.DTO.response.UserResponse;
 import com.example.tripItinerary.Entity.DeletedUser;
+import com.example.tripItinerary.Entity.PasswordResetToken;
 import com.example.tripItinerary.Entity.User;
 import com.example.tripItinerary.Mapper.UserMapper;
 import com.example.tripItinerary.Repo.DeletedUserRepository;
@@ -235,4 +237,75 @@ public class UserServiceImpl implements UserService {
 
                 userRepository.delete(user);
         }
+
+        @Override
+        public void resetPassword(ResetPasswordRequest request) {
+                String email = request.getEmail().trim().toLowerCase();
+
+                User user = userRepository.findByEmail(email)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "User not found with email: " + email));
+
+                user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+
+                userRepository.save(user);
+        }
+
+        // @Override
+        // @Transactional
+        // public void resetPassword(
+        // ResetPasswordRequest request) {
+
+        // String token = request.getResetToken().trim();
+
+        // PasswordResetToken resetToken = passwordResetTokenRepository
+        // .findByTokenAndUsedFalse(token)
+        // .orElseThrow(() -> new IllegalArgumentException(
+        // "Invalid or expired reset token."));
+
+        // // ========================================================
+        // // EXPIRY CHECK
+        // // ========================================================
+
+        // if (resetToken.getExpiresAt()
+        // .isBefore(LocalDateTime.now())) {
+
+        // resetToken.setUsed(true);
+
+        // passwordResetTokenRepository.save(
+        // resetToken);
+
+        // throw new IllegalArgumentException(
+        // "Reset token has expired.");
+        // }
+
+        // // ========================================================
+        // // FIND USER
+        // // ========================================================
+
+        // User user = userRepository.findById(
+        // resetToken.getUserId()).orElseThrow(
+        // () -> new ResourceNotFoundException(
+        // "User not found."));
+
+        // // ========================================================
+        // // UPDATE PASSWORD
+        // // ========================================================
+
+        // user.setPasswordHash(
+        // passwordEncoder.encode(
+        // request.getPassword()));
+
+        // userRepository.save(user);
+
+        // // ========================================================
+        // // INVALIDATE TOKEN
+        // // ========================================================
+
+        // resetToken.setUsed(true);
+
+        // passwordResetTokenRepository.save(
+        // resetToken);
+        // }
+
 }
