@@ -1,8 +1,7 @@
 package com.example.tripItinerary.DTO.request;
 
+import java.time.LocalDate;
 
-
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -39,14 +38,12 @@ public class RegisterRequest {
     @Size(max = 1000)
     private String profileImage;
 
-     // ============================================================
+    // ============================================================
     // OPTIONAL
     // ============================================================
 
-
     private String gender;
 
-    private java.time.LocalDate dob;
-
+    private LocalDate dob;
 
 }

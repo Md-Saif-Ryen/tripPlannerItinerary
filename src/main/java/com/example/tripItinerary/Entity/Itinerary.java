@@ -75,6 +75,10 @@ public class Itinerary {
     @Column(name = "end_date")
     private LocalDate endDate;
 
+    @Builder.Default
+    @Column(name = "restaurants_per_day", nullable = false)
+    private Integer restaurantsPerDay = 1;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -97,5 +101,16 @@ public class Itinerary {
     public void removeDay(ItineraryDay day) {
         itineraryDays.remove(day);
         day.setItinerary(null);
+    }
+    
+    public int getSafeRestaurantsPerDay() {
+
+        if (restaurantsPerDay == null
+                || restaurantsPerDay < 1) {
+
+            return 1;
+        }
+
+        return restaurantsPerDay;
     }
 }

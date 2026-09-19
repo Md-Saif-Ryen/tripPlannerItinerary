@@ -1,5 +1,4 @@
 package com.example.tripItinerary.DTO.response;
-        
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -55,6 +54,12 @@ public class TouristPlaceResponse {
 
     private LocalTime closingTime;
 
+    /**
+     * Example:
+     * ["SOLO", "COUPLE", "FAMILY", "FRIENDS"]
+     */
+    private List<String> travelTypes;
+
     private Boolean active;
 
     private List<TouristPlaceImageResponse> images;
@@ -64,5 +69,4 @@ public class TouristPlaceResponse {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
-
 }

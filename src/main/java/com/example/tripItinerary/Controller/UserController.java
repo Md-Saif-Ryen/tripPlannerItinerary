@@ -24,64 +24,66 @@ import lombok.RequiredArgsConstructor;
 @CrossOrigin(origins = "*")
 public class UserController {
 
-    private final UserService userService;
+        private final UserService userService;
 
-    @PostMapping("/create_user")
-    public ResponseEntity<ApiResponse<UserResponse>> create(
-            @Valid @RequestBody UserRequest request) {
+        @PostMapping("/create_user")
+        public ResponseEntity<ApiResponse<UserResponse>> create(
+                        @Valid @RequestBody UserRequest request) {
 
-                System.out.println("Creating user with email: " + request.getEmail() + ", full name: " + request.getFullName());
-        UserResponse response = userService.create(request);
+                System.out.println("Creating user with email: " + request.getEmail() + ", full name: "
+                                + request.getFullName());
+                UserResponse response = userService.create(request);
 
-        System.out.println("User created with ID: " + response.getId() + ", email: " + response.getEmail() + ", full name: " + response.getFullName());
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("User created successfully.", response));
-    }
+                System.out.println("User created with ID: " + response.getId() + ", email: " + response.getEmail()
+                                + ", full name: " + response.getFullName());
+                return ResponseEntity.status(HttpStatus.CREATED)
+                                .body(ApiResponse.success("User created successfully.", response));
+        }
 
-    @PutMapping("/updateById/{id}")
-    public ResponseEntity<ApiResponse<UserResponse>> update(
-            @PathVariable Long id,
-            @Valid @RequestBody userUpdateRequest request) {
+        @PutMapping("/updateById/{id}")
+        public ResponseEntity<ApiResponse<UserResponse>> update(
+                        @PathVariable Long id,
+                        @Valid @RequestBody userUpdateRequest request) {
 
-        UserResponse response = userService.update(id, request);
+                UserResponse response = userService.update(id, request);
 
-        return ResponseEntity.ok(
-                ApiResponse.success("User updated successfully.", response));
-    }
+                return ResponseEntity.ok(
+                                ApiResponse.success("User updated successfully.", response));
+        }
 
-    @GetMapping("/getById/{id}")
-    public ResponseEntity<ApiResponse<UserResponse>> getById(
-            @PathVariable Long id) {
+        @GetMapping("/getById/{id}")
+        public ResponseEntity<ApiResponse<UserResponse>> getById(
+                        @PathVariable Long id) {
 
-        return ResponseEntity.ok(
-                ApiResponse.success(userService.getById(id)));
-    }
+                return ResponseEntity.ok(
+                                ApiResponse.success(userService.getById(id)));
+        }
 
-    @GetMapping("/getAll")
-    public ResponseEntity<ApiResponse<List<UserResponse>>> getAll() {
+        @GetMapping("/getAll")
+        public ResponseEntity<ApiResponse<List<UserResponse>>> getAll() {
 
-        return ResponseEntity.ok(
-                ApiResponse.success(userService.getAll()));
-    }
+                return ResponseEntity.ok(
+                                ApiResponse.success(userService.getAll()));
+        }
 
-    @DeleteMapping("/deleteById/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(
-            @PathVariable Long id) {
+        @DeleteMapping("/deleteById/{id}")
+        public ResponseEntity<ApiResponse<Void>> delete(
+                        @PathVariable Long id) {
 
-        userService.delete(id);
+                userService.delete(id);
 
-        return ResponseEntity.ok(
-                ApiResponse.success("User deleted successfully.", null));
-    }
+                return ResponseEntity.ok(
+                                ApiResponse.success("User deleted successfully.", null));
+        }
 
-    @PostMapping("/resetPassword")
-    public ResponseEntity<ApiResponse<Void>> resetPassword(
-            @Valid @RequestBody ResetPasswordRequest request) {
+        @PostMapping("/resetPassword")
+        public ResponseEntity<ApiResponse<Void>> resetPassword(
+                        @Valid @RequestBody ResetPasswordRequest request) {
 
-        userService.resetPassword(request);
+                userService.resetPassword(request);
 
-        return ResponseEntity.ok(
-                ApiResponse.success("Password reset successfully.", null));
-    }
+                return ResponseEntity.ok(
+                                ApiResponse.success("Password reset successfully.", null));
+        }
 
 }

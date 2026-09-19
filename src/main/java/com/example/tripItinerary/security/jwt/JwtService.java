@@ -55,7 +55,6 @@ public class JwtService {
     /**
      * Extract username(email).
      */
-    @SuppressWarnings("null")
     public String extractUsername(String token) {
 
         return extractClaim(token, Claims::getSubject);
@@ -65,7 +64,6 @@ public class JwtService {
     /**
      * Extract expiration date.
      */
-    @SuppressWarnings("null")
     public Date extractExpiration(String token) {
 
         return extractClaim(token, Claims::getExpiration);

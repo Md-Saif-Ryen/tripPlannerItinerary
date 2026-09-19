@@ -48,7 +48,7 @@ public class ItineraryController {
         }
 
         @GetMapping("/summary")
-        public ResponseEntity<ApiResponse<UserSummaryResponse>> getUserSummary(Long id) {
+        public ResponseEntity<ApiResponse<UserSummaryResponse>> getUserSummary(@RequestParam Long id) {
 
                 try {
 

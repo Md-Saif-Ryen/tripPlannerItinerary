@@ -9,6 +9,7 @@ import java.util.List;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.example.tripItinerary.convertor.TravelTypeListConverter;
 import com.example.tripItinerary.enums.PlaceCategory;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -99,9 +100,10 @@ public class TouristPlace {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    // Add travel types field
+    @Convert(converter = TravelTypeListConverter.class)
     @Column(name = "travel_types")
-    private String travelTypes; // Store as comma-separated: "SOLO,FAMILY"
+    @Builder.Default
+    private List<String> travelTypes = new ArrayList<>();
 
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;

@@ -180,7 +180,7 @@ public class ItineraryServiceImpl implements ItineraryService {
 
                 List<TouristPlace> allTouristPlaces = fetchTouristPlaces(location);
 
-                List<Hotel> allHotels = hotelRepository.findByLocationId(
+                List<Hotel> allHotels = hotelRepository.findActiveByLocationId(
                                 location.getId());
 
                 List<Restaurant> allRestaurants = restaurantRepository
@@ -296,10 +296,7 @@ public class ItineraryServiceImpl implements ItineraryService {
                         // ==================================================
 
                         BigDecimal estimatedCost = calculateTotalEstimatedCost(
-                                        itinerary,
-                                        hotels,
-                                        restaurants,
-                                        sortedPlaces);
+                                        itinerary);
 
                         itinerary.setEstimatedCost(
                                         estimatedCost);
@@ -569,7 +566,7 @@ public class ItineraryServiceImpl implements ItineraryService {
                 // STEP 7: SAVE ONLY ITINERARY
                 // ======================================================
 
-                Itinerary savedItinerary = itineraryRepository.saveAndFlush(
+                Itinerary savedItinerary = itineraryRepository.save(
                                 itinerary);
 
                 log.info(
@@ -614,7 +611,7 @@ public class ItineraryServiceImpl implements ItineraryService {
                                                 newDay);
                         }
 
-                        savedDays = itineraryDayRepository.saveAllAndFlush(
+                        savedDays = itineraryDayRepository.saveAll(
                                         freshDays);
                 }
 
@@ -678,7 +675,7 @@ public class ItineraryServiceImpl implements ItineraryService {
 
                 if (!freshPlaces.isEmpty()) {
 
-                        itineraryPlaceRepository.saveAllAndFlush(
+                        itineraryPlaceRepository.saveAll(
                                         freshPlaces);
                 }
 
@@ -748,6 +745,12 @@ public class ItineraryServiceImpl implements ItineraryService {
                                 .itineraryStatus(response.getItineraryStatus())
                                 .startDate(response.getStartDate())
                                 .endDate(response.getEndDate())
+                                .restaurantsPerDay(
+                                                response.getRestaurantsPerDay() != null
+                                                                ? Math.max(
+                                                                                1,
+                                                                                response.getRestaurantsPerDay())
+                                                                : 1)
                                 .itineraryDays(new ArrayList<>())
                                 .build();
 
@@ -1215,23 +1218,37 @@ public class ItineraryServiceImpl implements ItineraryService {
         // ==========================================================
         // ASSIGN RESTAURANTS
         // ==========================================================
+        // ==========================================================
+        // ASSIGN RESTAURANTS TO ITINERARY
+        // ==========================================================
 
         private void assignRestaurantsToItineraryInMemory(
                         Itinerary itinerary,
                         List<Restaurant> restaurants,
                         int optionNumber) {
 
-                if (restaurants == null ||
-                                restaurants.isEmpty()) {
+                if (itinerary == null) {
+                        return;
+                }
+
+                if (restaurants == null || restaurants.isEmpty()) {
+
+                        log.warn(
+                                        "No restaurants available for option {}",
+                                        optionNumber);
 
                         return;
                 }
 
                 List<ItineraryDay> days = itinerary.getItineraryDays();
 
-                if (days == null ||
-                                days.isEmpty()) {
+                if (days == null || days.isEmpty()) {
+                        return;
+                }
 
+                int restaurantsPerDay = itinerary.getSafeRestaurantsPerDay();
+
+                if (restaurantsPerDay <= 0) {
                         return;
                 }
 
@@ -1239,49 +1256,144 @@ public class ItineraryServiceImpl implements ItineraryService {
 
                 for (ItineraryDay day : days) {
 
+                        if (day == null) {
+                                continue;
+                        }
+
+                        for (int slot = 0; slot < restaurantsPerDay
+                                        && restaurantIndex < restaurants.size(); slot++) {
+
+                                Restaurant restaurant = restaurants.get(restaurantIndex);
+
+                                restaurantIndex++;
+
+                                if (restaurant == null) {
+                                        continue;
+                                }
+
+                                BigDecimal cost = restaurant.getAverageCostPerPerson() != null
+                                                ? restaurant.getAverageCostPerPerson()
+                                                : BigDecimal.ZERO;
+
+                                ItineraryPlace restaurantPlace = ItineraryPlace.builder()
+                                                .itineraryDay(day)
+                                                .placeType(PlaceType.RESTAURANT)
+                                                .referenceId(restaurant.getId())
+                                                .visitOrder(
+                                                                getRestaurantVisitOrder(slot))
+                                                .plannedStartTime(
+                                                                getRestaurantStartTime(slot))
+                                                .plannedEndTime(
+                                                                getRestaurantEndTime(slot))
+                                                .estimatedCost(cost)
+                                                .travelTimeMinutes(0)
+                                                .completed(false)
+                                                .notes(
+                                                                "Restaurant: "
+                                                                                + getRestaurantName(
+                                                                                                restaurant))
+                                                .build();
+
+                                day.addPlace(restaurantPlace);
+                        }
+
                         if (restaurantIndex >= restaurants.size()) {
                                 break;
                         }
-
-                        Restaurant restaurant = restaurants.get(
-                                        restaurantIndex++);
-
-                        ItineraryPlace restaurantPlace = ItineraryPlace.builder()
-                                        .itineraryDay(
-                                                        day)
-                                        .placeType(
-                                                        PlaceType.RESTAURANT)
-                                        .referenceId(
-                                                        restaurant.getId())
-                                        .visitOrder(
-                                                        98)
-                                        .plannedStartTime(
-                                                        LocalTime.of(
-                                                                        13,
-                                                                        0))
-                                        .plannedEndTime(
-                                                        LocalTime.of(
-                                                                        14,
-                                                                        0))
-                                        .estimatedCost(
-                                                        restaurant
-                                                                        .getAverageCostPerPerson() != null
-                                                                                        ? restaurant
-                                                                                                        .getAverageCostPerPerson()
-                                                                                        : BigDecimal.ZERO)
-                                        .travelTimeMinutes(
-                                                        0)
-                                        .completed(
-                                                        false)
-                                        .notes(
-                                                        "Restaurant: "
-                                                                        + restaurant
-                                                                                        .getRestaurantName())
-                                        .build();
-
-                        day.addPlace(
-                                        restaurantPlace);
                 }
+
+                log.info(
+                                "Option {}: assigned {} restaurants. " +
+                                                "requestedPerDay={}",
+                                optionNumber,
+                                restaurantIndex,
+                                restaurantsPerDay);
+        }
+        // ==========================================================
+        // RESTAURANT START TIME
+        // ==========================================================
+
+        private LocalTime getRestaurantStartTime(
+                        int slot) {
+
+                return switch (slot) {
+
+                        case 0 ->
+                                LocalTime.of(13, 0);
+
+                        case 1 ->
+                                LocalTime.of(20, 0);
+
+                        default ->
+                                LocalTime.of(20, 0)
+                                                .plusHours(slot - 1L);
+                };
+        }
+        // ==========================================================
+        // RESTAURANT VISIT ORDER
+        // ==========================================================
+
+        private int getRestaurantVisitOrder(
+                        int slot) {
+
+                return 98 + slot;
+        }
+        // ==========================================================
+        // RESTAURANT END TIME
+        // ==========================================================
+
+        private LocalTime getRestaurantEndTime(
+                        int slot) {
+
+                return getRestaurantStartTime(slot)
+                                .plusHours(1);
+        }
+        // ==========================================================
+        // SAFE TOTAL DAYS
+        // ==========================================================
+
+        private int safeTotalDays(
+                        Itinerary itinerary) {
+
+                if (itinerary == null
+                                || itinerary.getTotalDays() == null) {
+
+                        return 0;
+                }
+
+                return Math.max(
+                                0,
+                                itinerary.getTotalDays());
+        }
+        // ==========================================================
+        // SAFE BIG DECIMAL
+        // ==========================================================
+
+        private BigDecimal safeBigDecimal(
+                        BigDecimal value) {
+
+                return value != null
+                                ? value
+                                : BigDecimal.ZERO;
+        }
+        // ==========================================================
+        // SAFE RESTAURANT NAME
+        // ==========================================================
+
+        private String getRestaurantName(
+                        Restaurant restaurant) {
+
+                if (restaurant == null) {
+                        return "Restaurant";
+                }
+
+                String name = restaurant.getRestaurantName();
+
+                if (name == null || name.trim().isEmpty()) {
+                        return "Restaurant";
+                }
+
+                return name.trim();
         }
 
         // ==========================================================
@@ -1394,41 +1506,61 @@ public class ItineraryServiceImpl implements ItineraryService {
         // RESTAURANT SELECTION
         // ==========================================================
 
+        // ==========================================================
+        // RESTAURANT SELECTION
+        // ==========================================================
+
         private List<Restaurant> assignRestaurantsForOption(
                         Itinerary itinerary,
                         List<Restaurant> restaurants,
                         int optionNumber) {
 
-                if (restaurants == null ||
-                                restaurants.isEmpty()) {
+                if (itinerary == null
+                                || restaurants == null
+                                || restaurants.isEmpty()) {
 
                         return new ArrayList<>();
                 }
 
-                BigDecimal totalBudget = itinerary.getTotalBudget();
+                int totalDays = safeTotalDays(itinerary);
+
+                if (totalDays <= 0) {
+                        return new ArrayList<>();
+                }
+
+                int restaurantsPerDay = itinerary.getSafeRestaurantsPerDay();
+
+                int totalRestaurantsRequired = totalDays * restaurantsPerDay;
+
+                if (totalRestaurantsRequired <= 0) {
+                        return new ArrayList<>();
+                }
+
+                BigDecimal totalBudget = safeBigDecimal(
+                                itinerary.getTotalBudget());
 
                 BigDecimal restaurantBudget = totalBudget.multiply(
                                 RESTAURANT_BUDGET_PERCENTAGE);
 
                 BigDecimal perMealBudget = restaurantBudget.divide(
                                 BigDecimal.valueOf(
-                                                itinerary.getTotalDays() * 2L),
+                                                totalRestaurantsRequired),
                                 2,
                                 java.math.RoundingMode.HALF_UP);
 
                 // ======================================================
-                // STRICT FILTER
+                // STRICT BUDGET FILTER
                 // ======================================================
 
                 List<Restaurant> filtered = restaurants.stream()
-                                .filter(
-                                                restaurant -> restaurant
-                                                                .getAverageCostPerPerson() != null)
-                                .filter(
-                                                restaurant -> restaurant
-                                                                .getAverageCostPerPerson()
-                                                                .compareTo(
-                                                                                perMealBudget) <= 0)
+                                .filter(Objects::nonNull)
+                                .filter(restaurant -> restaurant.getAverageCostPerPerson() != null)
+                                .filter(restaurant -> restaurant
+                                                .getAverageCostPerPerson()
+                                                .signum() >= 0)
+                                .filter(restaurant -> restaurant
+                                                .getAverageCostPerPerson()
+                                                .compareTo(perMealBudget) <= 0)
                                 .toList();
 
                 // ======================================================
@@ -1438,19 +1570,29 @@ public class ItineraryServiceImpl implements ItineraryService {
                 if (filtered.isEmpty()) {
 
                         log.warn(
-                                        "No restaurant within budget {}. "
+                                        "No restaurant found within per-meal budget {}. "
                                                         + "Using cheapest restaurants.",
                                         perMealBudget);
 
                         filtered = restaurants.stream()
-                                        .filter(
-                                                        restaurant -> restaurant
-                                                                        .getAverageCostPerPerson() != null)
+                                        .filter(Objects::nonNull)
+                                        .filter(restaurant -> restaurant.getAverageCostPerPerson() != null)
+                                        .filter(restaurant -> restaurant
+                                                        .getAverageCostPerPerson()
+                                                        .signum() >= 0)
                                         .sorted(
                                                         Comparator.comparing(
                                                                         Restaurant::getAverageCostPerPerson))
                                         .toList();
                 }
+
+                if (filtered.isEmpty()) {
+                        return new ArrayList<>();
+                }
+
+                int resultLimit = Math.min(
+                                totalRestaurantsRequired,
+                                filtered.size());
 
                 // ======================================================
                 // OPTION 1 = BEST RATING
@@ -1464,7 +1606,7 @@ public class ItineraryServiceImpl implements ItineraryService {
                                                                         Restaurant::getAverageRating,
                                                                         Comparator.nullsLast(
                                                                                         Comparator.reverseOrder())))
-                                        .limit(3)
+                                        .limit(resultLimit)
                                         .toList();
                 }
 
@@ -1478,7 +1620,7 @@ public class ItineraryServiceImpl implements ItineraryService {
                                         .sorted(
                                                         Comparator.comparing(
                                                                         Restaurant::getAverageCostPerPerson))
-                                        .limit(3)
+                                        .limit(resultLimit)
                                         .toList();
                 }
 
@@ -1491,7 +1633,7 @@ public class ItineraryServiceImpl implements ItineraryService {
                                                 Comparator.comparing(
                                                                 Restaurant::getAverageCostPerPerson,
                                                                 Comparator.reverseOrder()))
-                                .limit(3)
+                                .limit(resultLimit)
                                 .toList();
         }
 
@@ -1726,13 +1868,27 @@ public class ItineraryServiceImpl implements ItineraryService {
                         TouristPlace place,
                         Itinerary itinerary) {
 
-                // Currently all active tourist places are accepted.
-                //
-                // Future:
-                // if TouristPlace contains travelTypes,
-                // compare it with itinerary.getTravelType().
+                if (place.getTravelTypes() == null ||
+                                place.getTravelTypes().isEmpty()) {
 
-                return true;
+                        return true;
+                }
+
+                if (itinerary.getTravelType() == null) {
+                        return true;
+                }
+
+                String requestedTravelType = itinerary.getTravelType()
+                                .name()
+                                .trim()
+                                .toUpperCase();
+
+                return place.getTravelTypes()
+                                .stream()
+                                .filter(Objects::nonNull)
+                                .map(String::trim)
+                                .map(String::toUpperCase)
+                                .anyMatch(type -> type.equals(requestedTravelType));
         }
 
         // ==========================================================
@@ -1913,6 +2069,12 @@ public class ItineraryServiceImpl implements ItineraryService {
                 itinerary.setTotalBudget(
                                 request.getTotalBudget());
 
+                itinerary.setRestaurantsPerDay(
+                                request.getRestaurantsPerDay() != null
+                                                ? Math.max(
+                                                                1,
+                                                                request.getRestaurantsPerDay())
+                                                : 1);
                 // IMPORTANT:
                 // Request estimatedCost is ignored during generation.
                 // Backend calculates actual estimated cost.
@@ -1939,79 +2101,52 @@ public class ItineraryServiceImpl implements ItineraryService {
         // COST CALCULATION
         // ==========================================================
 
+        // ==========================================================
+        // COST CALCULATION
+        // ==========================================================
+
         private BigDecimal calculateTotalEstimatedCost(
-                        Itinerary itinerary,
-                        List<Hotel> hotels,
-                        List<Restaurant> restaurants,
-                        List<TouristPlace> touristPlaces) {
+                        Itinerary itinerary) {
+
+                if (itinerary == null) {
+                        return BigDecimal.ZERO;
+                }
+
+                List<ItineraryDay> days = itinerary.getItineraryDays();
+
+                if (days == null || days.isEmpty()) {
+                        return BigDecimal.ZERO;
+                }
 
                 BigDecimal totalCost = BigDecimal.ZERO;
 
-                // ======================================================
-                // HOTEL
-                // ======================================================
+                for (ItineraryDay day : days) {
 
-                if (hotels != null &&
-                                !hotels.isEmpty()) {
-
-                        Hotel hotel = hotels.get(0);
-
-                        if (hotel.getPricePerNight() != null) {
-
-                                BigDecimal hotelCost = hotel.getPricePerNight()
-                                                .multiply(
-                                                                BigDecimal.valueOf(
-                                                                                itinerary
-                                                                                                .getTotalDays()));
-
-                                totalCost = totalCost.add(
-                                                hotelCost);
+                        if (day == null) {
+                                continue;
                         }
-                }
 
-                // ======================================================
-                // RESTAURANT
-                // ======================================================
+                        List<ItineraryPlace> places = day.getItineraryPlaces();
 
-                if (restaurants != null &&
-                                !restaurants.isEmpty()) {
-
-                        Restaurant restaurant = restaurants.get(0);
-
-                        if (restaurant
-                                        .getAverageCostPerPerson() != null) {
-
-                                BigDecimal foodCost = restaurant
-                                                .getAverageCostPerPerson()
-                                                .multiply(
-                                                                BigDecimal.valueOf(
-                                                                                itinerary
-                                                                                                .getTotalDays()
-                                                                                                * 2L));
-
-                                totalCost = totalCost.add(
-                                                foodCost);
+                        if (places == null || places.isEmpty()) {
+                                continue;
                         }
-                }
 
-                // ======================================================
-                // TOURIST PLACES
-                // ======================================================
+                        for (ItineraryPlace place : places) {
 
-                if (touristPlaces != null &&
-                                !touristPlaces.isEmpty()) {
+                                if (place == null) {
+                                        continue;
+                                }
 
-                        BigDecimal placeCost = touristPlaces.stream()
-                                        .map(
-                                                        place -> place.getPrice() != null
-                                                                        ? place.getPrice()
-                                                                        : BigDecimal.ZERO)
-                                        .reduce(
-                                                        BigDecimal.ZERO,
-                                                        BigDecimal::add);
+                                BigDecimal cost = place.getEstimatedCost();
 
-                        totalCost = totalCost.add(
-                                        placeCost);
+                                if (cost == null
+                                                || cost.signum() <= 0) {
+                                        continue;
+                                }
+
+                                totalCost = totalCost.add(cost);
+                        }
                 }
 
                 return totalCost;
@@ -2112,16 +2247,16 @@ public class ItineraryServiceImpl implements ItineraryService {
 
         @Override
         @Transactional(readOnly = true)
-        public ItineraryResponse getById(
-                        @NonNull Long id) {
+        public ItineraryResponse getById(@NonNull Long id) {
 
-                Itinerary itinerary = getItinerary(id);
+                Itinerary itinerary = itineraryRepository
+                                .findWithDetailsById(id)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Itinerary not found with id: " + id));
 
-                validateOwnership(
-                                itinerary);
+                validateOwnership(itinerary);
 
-                return itineraryMapper.toResponse(
-                                itinerary);
+                return itineraryMapper.toResponse(itinerary);
         }
 
         // ==========================================================

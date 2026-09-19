@@ -37,6 +37,7 @@ public class ItineraryResponse {
 
     private LocalDate startDate; // Added
     private LocalDate endDate; // Added
+    private Integer restaurantsPerDay;
 
     private List<ItineraryDayResponse> itineraryDays;
 

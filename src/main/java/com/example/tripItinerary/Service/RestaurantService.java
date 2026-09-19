@@ -1,22 +1,73 @@
+// package com.example.tripItinerary.Service;
+
+// import java.util.List;
+
+// import org.springframework.web.multipart.MultipartFile;
+
+// import com.example.tripItinerary.DTO.request.RestaurantRequest;
+// import com.example.tripItinerary.DTO.response.RestaurantCsvImportResponse;
+// import com.example.tripItinerary.DTO.response.RestaurantResponse;
+
+// public interface RestaurantService {
+
+//     RestaurantResponse create(RestaurantRequest request);
+
+//     RestaurantResponse update(Long id, RestaurantRequest request);
+
+//     RestaurantResponse getById(Long id);
+
+//     List<RestaurantResponse> getAll();
+
+//     List<RestaurantResponse> getByLocation(Long locationId);
+
+//     void delete(Long id);
+
+//       RestaurantCsvImportResponse importCsv(
+//             MultipartFile file,
+//             Long locationId
+//     );
+
+// }
+
+
 package com.example.tripItinerary.Service;
 
-import java.util.List;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.tripItinerary.DTO.request.RestaurantRequest;
+import com.example.tripItinerary.DTO.response.PageResponse;
+import com.example.tripItinerary.DTO.response.RestaurantCsvImportResponse;
 import com.example.tripItinerary.DTO.response.RestaurantResponse;
 
 public interface RestaurantService {
 
-    RestaurantResponse create(RestaurantRequest request);
+    RestaurantResponse create(
+            RestaurantRequest request);
 
-    RestaurantResponse update(Long id, RestaurantRequest request);
+    RestaurantResponse update(
+            Long id,
+            RestaurantRequest request);
 
-    RestaurantResponse getById(Long id);
+    RestaurantResponse getById(
+            Long id);
 
-    List<RestaurantResponse> getAll();
+    PageResponse<RestaurantResponse> getAll(
+            Pageable pageable);
 
-    List<RestaurantResponse> getByLocation(Long locationId);
+    PageResponse<RestaurantResponse> getByLocation(
+            Long locationId,
+            Pageable pageable);
 
-    void delete(Long id);
+    PageResponse<RestaurantResponse> search(
+            Long locationId,
+            String keyword,
+            Pageable pageable);
 
+    void delete(
+            Long id);
+
+    RestaurantCsvImportResponse importCsv(
+            MultipartFile file,
+            Long locationId);
 }

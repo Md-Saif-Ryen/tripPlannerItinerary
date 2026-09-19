@@ -72,6 +72,8 @@ public class TouristPlaceServiceImpl implements TouristPlaceService {
         touristPlace.setWebsiteUrl(request.getWebsiteUrl());
         touristPlace.setEstimatedVisitTimeMinutes(request.getEstimatedVisitTimeMinutes());
         touristPlace.setCategory(request.getCategory());
+        touristPlace.setTravelTypes(
+        request.getTravelTypes());
         touristPlace.setOpeningTime(request.getOpeningTime());
         touristPlace.setClosingTime(request.getClosingTime());
         touristPlace.setActive(request.getActive());

@@ -2,6 +2,7 @@ package com.example.tripItinerary.DTO.request;
 
 import java.math.BigDecimal;
 import java.time.LocalTime;
+import java.util.List;
 
 import com.example.tripItinerary.enums.PlaceCategory;
 
@@ -11,6 +12,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+
 import lombok.*;
 
 @Getter
@@ -74,7 +76,13 @@ public class TouristPlaceRequest {
 
     private LocalTime closingTime;
 
+    /**
+     * Example:
+     * ["SOLO", "COUPLE", "FAMILY", "FRIENDS"]
+     */
+    @Builder.Default
+    private List<String> travelTypes = new java.util.ArrayList<>();
+
     @Builder.Default
     private Boolean active = true;
-
 }

@@ -112,6 +112,7 @@ public class SecurityConfig {
                                                                 "/api/v1/restaurant-reviews/**",
                                                                 "/api/v1/tourist-place-images/**",
                                                                 "/api/v1/tourist-place-reviews/**",
+                                                                "/actuator/**",
                                                                 "/api/v1/tourist-places/**")
                                                 .permitAll()
 

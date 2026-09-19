@@ -48,4 +48,7 @@
         // Add start date and end date
         private LocalDate startDate;
         private LocalDate endDate;
+
+        @Builder.Default
+        private Integer restaurantsPerDay = 1;
     }

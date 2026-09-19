@@ -44,7 +44,6 @@ public class LocationServiceImpl implements LocationService {
         // CREATE LOCATION
         // ============================================================
 
-        @SuppressWarnings("null")
         @Override
         public LocationResponse create(LocationRequest request) {
 
@@ -64,7 +63,6 @@ public class LocationServiceImpl implements LocationService {
                         Long id,
                         LocationRequest request) {
 
-                @SuppressWarnings("null")
                 Location location = locationRepository.findById(id)
                                 .orElseThrow(() -> new ResourceNotFoundException(
                                                 "Location not found with id : "
@@ -98,7 +96,6 @@ public class LocationServiceImpl implements LocationService {
         @Transactional(readOnly = true)
         public LocationResponse getById(Long id) {
 
-                @SuppressWarnings("null")
                 Location location = locationRepository.findById(id)
                                 .orElseThrow(() -> new ResourceNotFoundException(
                                                 "Location not found with id : "
@@ -125,7 +122,6 @@ public class LocationServiceImpl implements LocationService {
         // DELETE LOCATION
         // ============================================================
 
-        @SuppressWarnings("null")
         @Override
         public void delete(@NonNull Long id) {
 

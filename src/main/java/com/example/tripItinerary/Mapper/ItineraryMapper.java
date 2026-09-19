@@ -32,6 +32,7 @@ public interface ItineraryMapper {
     @Mapping(source = "location", target = "locationName", qualifiedByName = "getLocationName")
     @Mapping(source = "itineraryStatus", target = "itineraryStatus")
     @Mapping(source = "remainingBudget", target = "remainingBudget")
+    @Mapping(source = "restaurantsPerDay", target = "restaurantsPerDay")
     ItineraryResponse toResponse(Itinerary entity);
 
     // ✅ Custom method for location name
