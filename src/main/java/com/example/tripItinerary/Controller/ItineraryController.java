@@ -48,36 +48,19 @@ public class ItineraryController {
         }
 
         @GetMapping("/summary")
-        public ResponseEntity<ApiResponse<UserSummaryResponse>> getUserSummary(@RequestParam Long id) {
+        public ResponseEntity<ApiResponse<UserSummaryResponse>> getUserSummary(
+                        @RequestParam Long id) {
 
-                try {
+                UserSummaryResponse summary = itineraryService.getUserSummaryByUserId(id);
 
-                        // Long userId = securityUtils.getCurrentUserId();
-
-                        UserSummaryResponse summary = itineraryService.getUserSummaryByUserId(id);
-
-                        return ResponseEntity.ok(
-                                        ApiResponse.<UserSummaryResponse>builder()
-                                                        .success(true)
-                                                        .message(
-                                                                        "User profile summary fetched successfully")
-                                                        .data(summary)
-                                                        .build());
-
-                } catch (Exception e) {
-
-                        return ResponseEntity
-                                        .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                        .body(
-                                                        ApiResponse.<UserSummaryResponse>builder()
-                                                                        .success(false)
-                                                                        .message(
-                                                                                        "Failed to fetch user profile summary")
-                                                                        .data(null)
-                                                                        .build());
-                }
+                return ResponseEntity.ok(
+                                ApiResponse.<UserSummaryResponse>builder()
+                                                .success(true)
+                                                .message("User profile summary fetched successfully")
+                                                .data(summary)
+                                                .build());
         }
-
+        
         @PutMapping("/updateById/{id}")
         public ResponseEntity<ApiResponse<ItineraryResponse>> update(
                         @PathVariable Long id,

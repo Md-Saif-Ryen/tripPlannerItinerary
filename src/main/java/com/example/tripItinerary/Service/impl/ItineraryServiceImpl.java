@@ -1,6 +1,7 @@
 package com.example.tripItinerary.Service.impl;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -11,12 +12,17 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Stream;
-
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.tripItinerary.DTO.projection.UserSummaryProjection;
 import com.example.tripItinerary.DTO.request.ItineraryRequest;
+import com.example.tripItinerary.DTO.response.BudgetSummaryResponse;
 import com.example.tripItinerary.DTO.response.ItineraryResponse;
+import com.example.tripItinerary.DTO.response.UpcomingTripResponse;
 import com.example.tripItinerary.DTO.response.UserSummaryResponse;
 import com.example.tripItinerary.Entity.Hotel;
 import com.example.tripItinerary.Entity.Itinerary;
@@ -77,7 +83,6 @@ public class ItineraryServiceImpl implements ItineraryService {
         // ==========================================================
 
         private final ItineraryMapper itineraryMapper;
-        private final UserSummaryMapper userSummaryMapper;
         private final SecurityUtils securityUtils;
         private final ObjectMapper objectMapper;
         private final TemporaryItineraryRepository temporaryItineraryRepository;
@@ -2302,19 +2307,232 @@ public class ItineraryServiceImpl implements ItineraryService {
 
         @Override
         @Transactional(readOnly = true)
-        public UserSummaryResponse getUserSummaryByUserId(
-                        Long userId) {
+        public UserSummaryResponse getUserSummaryByUserId(Long userId) {
 
-                List<ItineraryResponse> itineraries = itineraryRepository
-                                .findByUserIdOrderByCreatedAtDesc(
-                                                userId)
-                                .stream()
-                                .map(
-                                                itineraryMapper::toResponse)
-                                .toList();
+                // =========================================================
+                // 1. GET ALL SUMMARY AGGREGATES IN ONE QUERY
+                // =========================================================
 
-                return userSummaryMapper.toResponse(
-                                itineraries);
+                UserSummaryProjection summary = itineraryRepository.getUserSummary(
+                                userId,
+                                ItineraryStatus.COMPLETED);
+
+                // =========================================================
+                // 2. SAFE DEFAULT VALUES
+                // =========================================================
+
+                long totalTrips = 0L;
+
+                long completedTrips = 0L;
+
+                BigDecimal totalBudget = BigDecimal.ZERO;
+
+                BigDecimal usedBudget = BigDecimal.ZERO;
+
+                if (summary != null) {
+
+                        if (summary.getTotalTrips() != null) {
+                                totalTrips = summary.getTotalTrips();
+                        }
+
+                        if (summary.getCompletedTrips() != null) {
+                                completedTrips = summary.getCompletedTrips();
+                        }
+
+                        if (summary.getTotalBudget() != null) {
+                                totalBudget = summary.getTotalBudget();
+                        }
+
+                        if (summary.getUsedBudget() != null) {
+                                usedBudget = summary.getUsedBudget();
+                        }
+                }
+
+                // =========================================================
+                // 3. VISITED PLACES
+                // =========================================================
+
+                long placesVisited = itineraryPlaceRepository.countVisitedPlacesByUserId(
+                                userId);
+
+                // =========================================================
+                // 4. REMAINING BUDGET
+                // =========================================================
+
+                BigDecimal remainingBudget = totalBudget.subtract(usedBudget);
+
+                if (remainingBudget.compareTo(BigDecimal.ZERO) < 0) {
+                        remainingBudget = BigDecimal.ZERO;
+                }
+
+                // =========================================================
+                // 5. BUDGET PERCENTAGE
+                // =========================================================
+
+                BigDecimal percentageUsed = calculateBudgetPercentage(
+                                usedBudget,
+                                totalBudget);
+
+                // =========================================================
+                // 6. UPCOMING TRIP
+                // =========================================================
+
+                // Pageable limitOne = PageRequest.of(0, 1);
+                List<Itinerary> upcomingTrips = itineraryRepository.findUpcomingTrips(
+                                userId,
+                                LocalDate.now(),
+                                List.of(
+                                                ItineraryStatus.COMPLETED,
+                                                ItineraryStatus.CONCERNED,
+                                                ItineraryStatus.DRAFT));
+
+                UpcomingTripResponse upcomingTrip = null;
+
+                if (!upcomingTrips.isEmpty()) {
+                        upcomingTrip = buildUpcomingTripResponse(
+                                        upcomingTrips.get(0));
+                }
+
+                // =========================================================
+                // 7. FINAL RESPONSE
+                // =========================================================
+
+                return UserSummaryResponse.builder()
+
+                                .totalTrips(
+                                                Math.toIntExact(totalTrips))
+
+                                .completedTrips(
+                                                Math.toIntExact(completedTrips))
+
+                                .placesVisited(
+                                                Math.toIntExact(placesVisited))
+
+                                // Country information is not available
+                                // in current Location entity.
+                                .countriesVisited(0)
+
+                                .budget(
+                                                BudgetSummaryResponse.builder()
+                                                                .total(totalBudget)
+                                                                .used(usedBudget)
+                                                                .remaining(remainingBudget)
+                                                                .percentageUsed(percentageUsed)
+                                                                .build())
+
+                                .upcomingTrip(upcomingTrip)
+
+                                .travelPreferences(
+                                                List.of())
+
+                                .build();
+        }
+
+        private BigDecimal calculateBudgetPercentage(
+                        BigDecimal used,
+                        BigDecimal total) {
+
+                if (used == null ||
+                                total == null ||
+                                total.compareTo(BigDecimal.ZERO) <= 0) {
+
+                        return BigDecimal.ZERO;
+                }
+
+                BigDecimal percentage = used.multiply(BigDecimal.valueOf(100))
+                                .divide(
+                                                total,
+                                                2,
+                                                RoundingMode.HALF_UP);
+
+                if (percentage.compareTo(
+                                BigDecimal.valueOf(100)) > 0) {
+
+                        return BigDecimal.valueOf(100);
+                }
+
+                if (percentage.compareTo(
+                                BigDecimal.ZERO) < 0) {
+
+                        return BigDecimal.ZERO;
+                }
+
+                return percentage;
+        }
+
+        private UpcomingTripResponse buildUpcomingTripResponse(
+                        Itinerary itinerary) {
+
+                if (itinerary == null) {
+                        return null;
+                }
+
+                return UpcomingTripResponse.builder()
+
+                                .id(
+                                                itinerary.getId())
+
+                                .title(
+                                                itinerary.getTitle())
+
+                                .locationName(
+                                                getLocationName(itinerary))
+
+                                .startDate(
+                                                itinerary.getStartDate())
+
+                                .endDate(
+                                                itinerary.getEndDate())
+
+                                .totalDays(
+                                                itinerary.getTotalDays())
+
+                                .totalBudget(
+                                                itinerary.getTotalBudget())
+
+                                .estimatedCost(
+                                                itinerary.getEstimatedCost())
+
+                                .itineraryStatus(
+                                                itinerary.getItineraryStatus())
+
+                                .build();
+        }
+
+        private String getLocationName(
+                        Itinerary itinerary) {
+
+                if (itinerary == null ||
+                                itinerary.getLocation() == null) {
+
+                        return null;
+                }
+
+                String city = itinerary.getLocation().getCityName();
+
+                String state = itinerary.getLocation().getStateName();
+
+                if (city != null &&
+                                !city.isBlank() &&
+                                state != null &&
+                                !state.isBlank()) {
+
+                        return city + ", " + state;
+                }
+
+                if (city != null &&
+                                !city.isBlank()) {
+
+                        return city;
+                }
+
+                if (state != null &&
+                                !state.isBlank()) {
+
+                        return state;
+                }
+
+                return null;
         }
 
         // ==========================================================
@@ -2625,28 +2843,6 @@ public class ItineraryServiceImpl implements ItineraryService {
                                                 userId,
                                                 minBudget,
                                                 maxBudget)
-                                .stream()
-                                .map(
-                                                itineraryMapper::toResponse)
-                                .toList();
-        }
-
-        // ==========================================================
-        // SEARCH
-        // ==========================================================
-
-        @Override
-        @Transactional(readOnly = true)
-        public List<ItineraryResponse> searchItineraries(
-                        String keyword) {
-
-                Long userId = securityUtils.getCurrentUserId();
-
-                return itineraryRepository
-                                .findByUserIdAndTitleContainingOrDescriptionContaining(
-                                                userId,
-                                                keyword,
-                                                keyword)
                                 .stream()
                                 .map(
                                                 itineraryMapper::toResponse)

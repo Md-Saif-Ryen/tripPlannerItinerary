@@ -34,7 +34,7 @@ public interface ItineraryService {
 
     List<ItineraryResponse> getItinerariesWithinBudget(BigDecimal minBudget, BigDecimal maxBudget);
 
-    List<ItineraryResponse> searchItineraries(String keyword);
+//     List<ItineraryResponse> searchItineraries(String keyword);
     List<ItineraryResponse> getItineraryByUserId(Long userId );
      UserSummaryResponse getUserSummaryByUserId(Long userId );
 
