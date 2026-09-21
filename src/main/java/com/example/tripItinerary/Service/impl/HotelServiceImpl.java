@@ -877,6 +877,20 @@ public class HotelServiceImpl implements HotelService {
                     "Valid location ID is required.");
         }
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countAll() {
+            return hotelRepository.countAllHotels();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countByLocation(Long locationId) {
+            return hotelRepository.countByLocationId(locationId);
+    }
+
+  
 }
 
 

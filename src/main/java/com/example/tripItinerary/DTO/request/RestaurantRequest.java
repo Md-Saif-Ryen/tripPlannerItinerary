@@ -35,6 +35,12 @@ public class RestaurantRequest {
     private BigDecimal averageCostPerPerson = BigDecimal.ZERO;
 
     @Builder.Default
+    @DecimalMin("0.0")
+    @DecimalMax("5.0")
+    private BigDecimal averageRating = BigDecimal.ZERO;
+
+
+    @Builder.Default
     @Min(value = 1)
     private Integer restaurantWeight = 1;
 

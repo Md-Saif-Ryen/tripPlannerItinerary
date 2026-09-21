@@ -47,4 +47,7 @@ public interface HotelService {
     Page<HotelResponse> getByLocation(Long locationId, Pageable pageable);
 
     void delete(Long id);
+
+    long countAll();
+    long countByLocation(Long locationId);
 }

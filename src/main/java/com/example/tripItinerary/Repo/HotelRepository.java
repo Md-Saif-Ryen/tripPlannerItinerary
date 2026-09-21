@@ -42,8 +42,6 @@
 //     List<Hotel> findByLocationId(Long locationId);
 // }
 
-
-
 package com.example.tripItinerary.Repo;
 
 import java.util.List;
@@ -58,88 +56,93 @@ import org.springframework.data.repository.query.Param;
 import com.example.tripItinerary.Entity.Hotel;
 
 public interface HotelRepository
-        extends JpaRepository<Hotel, Long> {
+                extends JpaRepository<Hotel, Long> {
 
-    // =========================================================
-    // DETAIL
-    // =========================================================
+        // =========================================================
+        // DETAIL
+        // =========================================================
 
-    @Query("""
-            SELECT DISTINCT h
-            FROM Hotel h
-            LEFT JOIN FETCH h.amenities
-            LEFT JOIN FETCH h.location
-            WHERE h.id = :id
-            """)
-    Optional<Hotel> findDetailById(
-            @Param("id") Long id);
+        @Query("""
+                        SELECT DISTINCT h
+                        FROM Hotel h
+                        LEFT JOIN FETCH h.amenities
+                        LEFT JOIN FETCH h.location
+                        WHERE h.id = :id
+                        """)
+        Optional<Hotel> findDetailById(
+                        @Param("id") Long id);
 
-    // =========================================================
-    // PAGINATED ALL
-    // =========================================================
+        // =========================================================
+        // PAGINATED ALL
+        // =========================================================
 
-    @Query(value = """
-            SELECT h
-            FROM Hotel h
-            LEFT JOIN FETCH h.location
-            WHERE h.active = true
-            """, countQuery = """
-            SELECT COUNT(h)
-            FROM Hotel h
-            WHERE h.active = true
-            """)
-    Page<Hotel> findAllOptimized(
-            Pageable pageable);
+        @Query(value = """
+                        SELECT h
+                        FROM Hotel h
+                        LEFT JOIN FETCH h.location
+                        WHERE h.active = true
+                        """, countQuery = """
+                        SELECT COUNT(h)
+                        FROM Hotel h
+                        WHERE h.active = true
+                        """)
+        Page<Hotel> findAllOptimized(
+                        Pageable pageable);
 
-    // =========================================================
-    // PAGINATED BY LOCATION
-    // =========================================================
+        // =========================================================
+        // PAGINATED BY LOCATION
+        // =========================================================
 
-    @Query(value = """
-            SELECT h
-            FROM Hotel h
-            LEFT JOIN FETCH h.location
-            WHERE h.location.id = :locationId
-            AND h.active = true
-            """, countQuery = """
-            SELECT COUNT(h)
-            FROM Hotel h
-            WHERE h.location.id = :locationId
-            AND h.active = true
-            """)
-    Page<Hotel> findByLocationOptimized(
-            @Param("locationId") Long locationId,
-            Pageable pageable);
+        @Query(value = """
+                        SELECT h
+                        FROM Hotel h
+                        LEFT JOIN FETCH h.location
+                        WHERE h.location.id = :locationId
+                        AND h.active = true
+                        """, countQuery = """
+                        SELECT COUNT(h)
+                        FROM Hotel h
+                        WHERE h.location.id = :locationId
+                        AND h.active = true
+                        """)
+        Page<Hotel> findByLocationOptimized(
+                        @Param("locationId") Long locationId,
+                        Pageable pageable);
 
-    // =========================================================
-    // ITINERARY / INTERNAL USE
-    // =========================================================
+        // =========================================================
+        // ITINERARY / INTERNAL USE
+        // =========================================================
 
-    @Query("""
-            SELECT h
-            FROM Hotel h
-            WHERE h.location.id = :locationId
-            AND h.active = true
-            """)
-    List<Hotel> findActiveByLocationId(
-            @Param("locationId") Long locationId);
+        @Query("""
+                        SELECT h
+                        FROM Hotel h
+                        WHERE h.location.id = :locationId
+                        AND h.active = true
+                        """)
+        List<Hotel> findActiveByLocationId(
+                        @Param("locationId") Long locationId);
 
+        // =========================================================
+        // EXISTS
+        // =========================================================
 
-            // =========================================================
-    // EXISTS
-    // =========================================================
+        boolean existsById(Long id);
 
-    boolean existsById(Long id);
+        // =========================================================
+        // OPTIONAL: FAST COUNT
+        // =========================================================
 
-    // =========================================================
-    // OPTIONAL: FAST COUNT
-    // =========================================================
+        @Query("""
+                            SELECT COUNT(h)
+                            FROM Hotel h
+                            WHERE h.location.id = :locationId
+                        """)
+        long countByLocationId(
+                        @Param("locationId") Long locationId);
 
-    @Query("""
-                SELECT COUNT(h)
-                FROM Hotel h
-                WHERE h.location.id = :locationId
-            """)
-    long countByLocationId(
-            @Param("locationId") Long locationId);
+        @Query("""
+                        SELECT COUNT(h)
+                        FROM Hotel h
+                        """)
+        long countAllHotels();
 }

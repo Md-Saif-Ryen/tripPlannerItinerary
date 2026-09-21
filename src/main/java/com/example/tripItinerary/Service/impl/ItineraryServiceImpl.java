@@ -93,13 +93,13 @@ public class ItineraryServiceImpl implements ItineraryService {
 
         private static final int MAX_DAYS = 30;
 
-        private static final int MAX_PLACES_PER_DAY = 5;
+        private static final int MAX_PLACES_PER_DAY = 7;
 
         private static final int DEFAULT_VISIT_MINUTES = 90;
 
         private static final int DEFAULT_TRAVEL_MINUTES = 30;
 
-        private static final int NUMBER_OF_OPTIONS = 3;
+        private static final int NUMBER_OF_OPTIONS = 5;
 
         // ==========================================================
         // BUDGET DISTRIBUTION

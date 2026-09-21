@@ -28,7 +28,7 @@ public class Restaurant {
     private Long id;
 
     // ===================== Foreign Key =====================
-@JsonIgnore
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location_id", nullable = false)
     private Location location;

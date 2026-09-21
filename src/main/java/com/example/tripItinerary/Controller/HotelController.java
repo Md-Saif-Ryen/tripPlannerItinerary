@@ -106,6 +106,7 @@
 package com.example.tripItinerary.Controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -321,6 +322,41 @@ public class HotelController {
                                 page,
                                 size,
                                 Sort.by(sortDirection, sortBy));
+        }
+
+
+
+        // ============================================================
+        // COUNT - ALL TOURIST PLACES
+        // ============================================================
+
+        @GetMapping("/count")
+        public ResponseEntity<Map<String, Object>> countTouristPlaces() {
+
+                long count = hotelService.countAll();
+
+                return ResponseEntity.ok(
+                                Map.of(
+                                                "success", true,
+                                                "message", "Hotels count fetched successfully.",
+                                                "data", count));
+        }
+
+        // ============================================================
+        // COUNT - BY LOCATION
+        // ============================================================
+
+        @GetMapping("/count/location/{locationId}")
+        public ResponseEntity<Map<String, Object>> countByLocation(
+                        @org.springframework.web.bind.annotation.PathVariable Long locationId) {
+
+                long count = hotelService.countByLocation(locationId);
+
+                return ResponseEntity.ok(
+                                Map.of(
+                                                "success", true,
+                                                "message", "hotels count fetched successfully.",
+                                                "data", count));
         }
 }
 

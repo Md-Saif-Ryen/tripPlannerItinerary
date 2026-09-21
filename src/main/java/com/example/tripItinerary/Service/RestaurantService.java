@@ -70,4 +70,13 @@ public interface RestaurantService {
     RestaurantCsvImportResponse importCsv(
             MultipartFile file,
             Long locationId);
+
+
+            long countAll();
+
+    long countByLocation(Long locationId);
+
+    long countActive();
+
+    long countActiveByLocation(Long locationId);
 }

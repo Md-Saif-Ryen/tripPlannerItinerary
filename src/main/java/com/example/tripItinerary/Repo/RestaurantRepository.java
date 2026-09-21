@@ -1,26 +1,3 @@
-// package com.example.tripItinerary.Repo;
-
-// import java.util.List;
-
-// import org.springframework.data.jpa.repository.JpaRepository;
-
-// import com.example.tripItinerary.Entity.Restaurant;
-
-// public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
-
-//     List<Restaurant> findByLocationId(Long locationId);
-
-//     List<Restaurant> findByLocationIdAndActiveTrue(Long locationId);
-
-//     List<Restaurant> findByVegTrue();
-    
-//     List<Restaurant> findByLocationIdAndActiveTrueOrderByAverageRatingDesc(
-//             Long locationId);
-
-
-// }
-
-
 package com.example.tripItinerary.Repo;
 
 import java.util.List;
@@ -34,94 +11,143 @@ import org.springframework.data.repository.query.Param;
 
 import com.example.tripItinerary.Entity.Restaurant;
 
-public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
+public interface RestaurantRepository
+                extends JpaRepository<Restaurant, Long> {
 
-    // ============================================================
-    // PAGINATED
-    // ============================================================
+        // ============================================================
+        // PAGINATED
+        // ============================================================
 
-    Page<Restaurant> findAllByOrderByIdDesc(
-            Pageable pageable);
+        Page<Restaurant> findAll(Pageable pageable);
 
-    Page<Restaurant> findByLocationId(
-            Long locationId,
-            Pageable pageable);
+        Page<Restaurant> findByLocationId(
+                        Long locationId,
+                        Pageable pageable);
 
-    Page<Restaurant> findByLocationIdAndActiveTrue(
-            Long locationId,
-            Pageable pageable);
+        Page<Restaurant> findByLocationIdAndActiveTrue(
+                        Long locationId,
+                        Pageable pageable);
 
-    Page<Restaurant> findByLocationIdAndVegTrueAndActiveTrue(
-            Long locationId,
-            Pageable pageable);
+        Page<Restaurant> findByLocationIdAndVegTrueAndActiveTrue(
+                        Long locationId,
+                        Pageable pageable);
 
-    // ============================================================
-    // ACTIVE RESTAURANTS
-    // Used by itinerary generation
-    // ============================================================
+        // ============================================================
+        // ACTIVE RESTAURANTS
+        // Used by itinerary generation
+        // ============================================================
 
-    List<Restaurant> findByLocationIdAndActiveTrue(
-            Long locationId);
+        List<Restaurant> findByLocationIdAndActiveTrue(
+                        Long locationId);
 
-    List<Restaurant> findByLocationIdAndActiveTrueOrderByAverageRatingDesc(
-            Long locationId);
+        List<Restaurant> findByLocationIdAndActiveTrueOrderByAverageRatingDesc(
+                        Long locationId);
 
-    // ============================================================
-    // VEG
-    // ============================================================
+        // ============================================================
+        // VEG
+        // ============================================================
 
-    List<Restaurant> findByVegTrue();
+        List<Restaurant> findByVegTrue();
 
-    // ============================================================
-    // SINGLE RECORD
-    // ============================================================
+        // ============================================================
+        // SINGLE RECORD
+        // ============================================================
 
-    Optional<Restaurant> findByLocationIdAndRestaurantNameIgnoreCase(
-            Long locationId,
-            String restaurantName);
+        Optional<Restaurant> findByLocationIdAndRestaurantNameIgnoreCase(
+                        Long locationId,
+                        String restaurantName);
 
-    boolean existsByLocationIdAndRestaurantNameIgnoreCase(
-            Long locationId,
-            String restaurantName);
+        boolean existsByLocationIdAndRestaurantNameIgnoreCase(
+                        Long locationId,
+                        String restaurantName);
 
-    // ============================================================
-    // SEARCH
-    // ============================================================
+        // ============================================================
+        // SEARCH
+        // ============================================================
 
-    @Query("""
-            SELECT r
-            FROM Restaurant r
-            WHERE r.location.id = :locationId
-            AND (
-                LOWER(r.restaurantName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-                OR LOWER(COALESCE(r.cuisineType, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
-                OR LOWER(COALESCE(r.address, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            )
-            """)
-    Page<Restaurant> searchByLocation(
-            @Param("locationId") Long locationId,
-            @Param("keyword") String keyword,
-            Pageable pageable);
+        @Query("""
+                        SELECT r
+                        FROM Restaurant r
+                        WHERE r.location.id = :locationId
+                        AND (
+                            LOWER(r.restaurantName)
+                                LIKE LOWER(CONCAT('%', :keyword, '%'))
 
-    // ============================================================
-    // CSV DUPLICATE CHECK
-    // ============================================================
+                            OR LOWER(COALESCE(r.cuisineType, ''))
+                                LIKE LOWER(CONCAT('%', :keyword, '%'))
 
-    @Query("""
-            SELECT r.restaurantName
-            FROM Restaurant r
-            WHERE r.location.id = :locationId
-            """)
-    List<String> findRestaurantNamesByLocationId(
-            @Param("locationId") Long locationId);
+                            OR LOWER(COALESCE(r.address, ''))
+                                LIKE LOWER(CONCAT('%', :keyword, '%'))
+                        )
+                        """)
+        Page<Restaurant> searchByLocation(
+                        @Param("locationId") Long locationId,
+                        @Param("keyword") String keyword,
+                        Pageable pageable);
 
+        // ============================================================
+        // CSV DUPLICATE CHECK
+        // ============================================================
 
+        @Query("""
+                        SELECT r.restaurantName
+                        FROM Restaurant r
+                        WHERE r.location.id = :locationId
+                        """)
+        List<String> findRestaurantNamesByLocationId(
+                        @Param("locationId") Long locationId);
 
-            @Query("""
-            SELECT r
-            FROM Restaurant r
-            WHERE r.location.id = :locationId
-            """)
-    List<Restaurant> findAllForImport(
-            @Param("locationId") Long locationId);
+        @Query("""
+                        SELECT r
+                        FROM Restaurant r
+                        WHERE r.location.id = :locationId
+                        """)
+        List<Restaurant> findAllForImport(
+                        @Param("locationId") Long locationId);
+
+        // ============================================================
+        // FAST COUNT - ALL RESTAURANTS
+        // ============================================================
+
+        @Query("""
+                        SELECT COUNT(r)
+                        FROM Restaurant r
+                        """)
+        long countAllRestaurants();
+
+        // ============================================================
+        // FAST COUNT - BY LOCATION
+        // ============================================================
+
+        @Query("""
+                        SELECT COUNT(r)
+                        FROM Restaurant r
+                        WHERE r.location.id = :locationId
+                        """)
+        long countByLocationId(
+                        @Param("locationId") Long locationId);
+
+        // ============================================================
+        // FAST COUNT - ACTIVE RESTAURANTS
+        // ============================================================
+
+        @Query("""
+                        SELECT COUNT(r)
+                        FROM Restaurant r
+                        WHERE r.active = true
+                        """)
+        long countActiveRestaurants();
+
+        // ============================================================
+        // FAST COUNT - ACTIVE BY LOCATION
+        // ============================================================
+
+        @Query("""
+                        SELECT COUNT(r)
+                        FROM Restaurant r
+                        WHERE r.location.id = :locationId
+                        AND r.active = true
+                        """)
+        long countActiveByLocationId(
+                        @Param("locationId") Long locationId);
 }

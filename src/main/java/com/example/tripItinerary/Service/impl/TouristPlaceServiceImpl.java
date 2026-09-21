@@ -1,8 +1,13 @@
 package com.example.tripItinerary.Service.impl;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +32,16 @@ public class TouristPlaceServiceImpl implements TouristPlaceService {
     private final TouristPlaceRepository touristPlaceRepository;
     private final LocationRepository locationRepository;
     private final TouristPlaceMapper touristPlaceMapper;
+
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
+            "id",
+            "placeWeight",
+            "popularityScore",
+            "averageRating",
+            "placeName",
+            "price",
+            "createdAt",
+            "updatedAt");
 
     @Override
     public TouristPlaceResponse create(TouristPlaceRequest request) {
@@ -126,4 +141,144 @@ public class TouristPlaceServiceImpl implements TouristPlaceService {
         touristPlaceRepository.delete(touristPlace);
     }
 
+      @Override
+    @Transactional(readOnly = true)
+    public Page<TouristPlaceResponse> getAll(
+            int page,
+            int size,
+            String sortBy,
+            String direction
+    ) {
+
+        Pageable pageable = createPageable(
+                page,
+                size,
+                sortBy,
+                direction
+        );
+
+        return touristPlaceRepository
+                .findAll(pageable)
+                .map(touristPlaceMapper::toResponse);
+    }
+
+
+    /*
+     * ============================================================
+     * PAGEABLE TOURIST PLACES BY LOCATION
+     * ============================================================
+     */
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<TouristPlaceResponse> getByLocation(
+            Long locationId,
+            int page,
+            int size,
+            String sortBy,
+            String direction
+    ) {
+
+        Pageable pageable = createPageable(
+                page,
+                size,
+                sortBy,
+                direction
+        );
+
+        return touristPlaceRepository
+                .findByLocationId(
+                        locationId,
+                        pageable
+                )
+                .map(touristPlaceMapper::toResponse);
+    }
+
+
+    /*
+     * ============================================================
+     * PAGEABLE CREATOR
+     * ============================================================
+     */
+
+    private Pageable createPageable(
+            int page,
+            int size,
+            String sortBy,
+            String direction
+    ) {
+
+        /*
+         * Page negative nahi ho sakta.
+         */
+        int safePage = Math.max(page, 0);
+
+
+        /*
+         * Size ko safe range mein rakhenge.
+         *
+         * Minimum = 1
+         * Maximum = 100
+         */
+        int safeSize = Math.min(
+                Math.max(size, 1),
+                100
+        );
+
+
+        /*
+         * Invalid sort field aane par default:
+         * placeWeight
+         */
+        String safeSortBy =
+                ALLOWED_SORT_FIELDS.contains(sortBy)
+                        ? sortBy
+                        : "placeWeight";
+
+
+        /*
+         * Default direction = DESC
+         */
+        Sort.Direction sortDirection =
+                "asc".equalsIgnoreCase(direction)
+                        ? Sort.Direction.ASC
+                        : Sort.Direction.DESC;
+
+
+        Sort sort = Sort.by(
+                sortDirection,
+                safeSortBy
+        );
+
+
+        return PageRequest.of(
+                safePage,
+                safeSize,
+                sort
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countAll() {
+        return touristPlaceRepository.countAllTouristPlaces();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countByLocation(Long locationId) {
+        return touristPlaceRepository.countByLocationId(locationId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countActive() {
+        return touristPlaceRepository.countActiveTouristPlaces();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countActiveByLocation(Long locationId) {
+        return touristPlaceRepository.countActiveByLocationId(locationId);
+    }
 }
