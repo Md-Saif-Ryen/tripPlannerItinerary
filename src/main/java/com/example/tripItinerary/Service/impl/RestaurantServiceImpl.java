@@ -111,8 +111,8 @@ public class RestaurantServiceImpl implements RestaurantService {
                 restaurant.setRestaurantName(
                                 request.getRestaurantName());
 
-                                restaurant.setAverageRating(
-                                                request.getAverageRating());
+                restaurant.setAverageRating(
+                                request.getAverageRating());
 
                 restaurant.setDescription(
                                 request.getDescription());
@@ -288,20 +288,13 @@ public class RestaurantServiceImpl implements RestaurantService {
         }
 
         // ============================================================
-        // CSV IMPORT - BULK OPTIMIZED
+        // CSV IMPORT - LOCATION ID FROM EACH ROW
         // ============================================================
 
         @Override
-        public RestaurantCsvImportResponse importCsv(
-                        MultipartFile file,
-                        Long locationId) {
+        public RestaurantCsvImportResponse importCsv(MultipartFile file) {
 
                 validateCsvFile(file);
-
-                Location location = locationRepository.findById(locationId)
-                                .orElseThrow(() -> new ResourceNotFoundException(
-                                                "Location not found with id : "
-                                                                + locationId));
 
                 RestaurantCsvImportResponse result = RestaurantCsvImportResponse.builder()
                                 .totalRows(0)
@@ -312,14 +305,9 @@ public class RestaurantServiceImpl implements RestaurantService {
                                 .errors(new ArrayList<>())
                                 .build();
 
-                try (
-                                BufferedReader reader = new BufferedReader(
-                                                new InputStreamReader(
-                                                                file.getInputStream(),
-                                                                StandardCharsets.UTF_8));
-
-                                CSVParser parser = CSVFormat.DEFAULT
-                                                .builder()
+                try (BufferedReader reader = new BufferedReader(
+                                new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8));
+                                CSVParser parser = CSVFormat.DEFAULT.builder()
                                                 .setHeader()
                                                 .setSkipHeaderRecord(true)
                                                 .setIgnoreEmptyLines(true)
@@ -327,134 +315,207 @@ public class RestaurantServiceImpl implements RestaurantService {
                                                 .build()
                                                 .parse(reader)) {
 
-                        // ====================================================
-                        // STEP 1 - LOAD EXISTING RESTAURANTS ONCE
-                        // ====================================================
+                        validateRequiredCsvHeaders(parser);
 
-                        Map<String, Restaurant> existingMap = new HashMap<>();
+                        // Cache locations: one DB lookup per unique locationId.
+                        Map<Long, Location> locationCache = new HashMap<>();
 
-                        for (Restaurant restaurant : restaurantRepository
-                                        .findByLocationId(
-                                                        locationId,
-                                                        Pageable.unpaged())
-                                        .getContent()) {
-
-                                existingMap.put(
-                                                normalizeName(
-                                                                restaurant.getRestaurantName()),
-                                                restaurant);
-                        }
-
-                        // ====================================================
-                        // STEP 2 - PARSE CSV
-                        // ====================================================
+                        // Cache existing restaurants separately for each location.
+                        // Key = locationId, value = normalizedName -> Restaurant.
+                        Map<Long, Map<String, Restaurant>> existingCache = new HashMap<>();
 
                         List<Restaurant> newRestaurants = new ArrayList<>();
-
                         List<Restaurant> updatedRestaurants = new ArrayList<>();
 
-                        Set<String> csvNames = new HashSet<>();
+                        // Prevent duplicate rows in the same CSV.
+                        // locationId + restaurantName is the unique import key.
+                        Set<String> csvRestaurantKeys = new HashSet<>();
 
                         for (CSVRecord record : parser) {
 
-                                result.setTotalRows(
-                                                result.getTotalRows() + 1);
+                                result.setTotalRows(result.getTotalRows() + 1);
 
                                 try {
 
-                                        Restaurant imported = parseRestaurant(
-                                                        record,
-                                                        location);
+                                        // 1. locationId comes from THIS CSV ROW.
+                                        Long locationId = parseLocationId(record);
+
+                                        // 2. Resolve Location from cache/database.
+                                        Location location = locationCache.get(locationId);
+
+                                        if (location == null) {
+                                                location = locationRepository.findById(locationId)
+                                                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                                                "Location not found with id : "
+                                                                                                + locationId));
+
+                                                locationCache.put(locationId, location);
+                                        }
+
+                                        // 3. Load existing restaurants for this location only once.
+                                        Map<String, Restaurant> existingMap = existingCache.computeIfAbsent(
+                                                        locationId,
+                                                        this::loadExistingRestaurants);
+
+                                        // 4. Convert CSV row to Restaurant entity.
+                                        Restaurant imported = parseRestaurant(record, location);
 
                                         if (imported == null) {
-
-                                                result.setSkipped(
-                                                                result.getSkipped() + 1);
-
+                                                result.setSkipped(result.getSkipped() + 1);
                                                 continue;
                                         }
 
-                                        String normalizedName = normalizeName(
-                                                        imported.getRestaurantName());
+                                        String normalizedName = normalizeName(imported.getRestaurantName());
 
-                                        // Prevent duplicate rows
-                                        // inside the same CSV.
+                                        String uniqueKey = buildRestaurantKey(locationId, normalizedName);
 
-                                        if (!csvNames.add(
-                                                        normalizedName)) {
-
-                                                result.setSkipped(
-                                                                result.getSkipped() + 1);
-
+                                        // 5. Skip duplicate row from same CSV.
+                                        if (!csvRestaurantKeys.add(uniqueKey)) {
+                                                result.setSkipped(result.getSkipped() + 1);
+                                                result.getErrors().add(
+                                                                "Row " + record.getRecordNumber()
+                                                                                + ": Duplicate restaurant '"
+                                                                                + imported.getRestaurantName()
+                                                                                + "' for locationId " + locationId
+                                                                                + " skipped.");
                                                 continue;
                                         }
 
-                                        Restaurant existing = existingMap.get(
-                                                        normalizedName);
+                                        // 6. Update if same restaurant already exists in this location.
+                                        Restaurant existing = existingMap.get(normalizedName);
 
                                         if (existing != null) {
 
-                                                updateFromCsv(
-                                                                existing,
-                                                                imported);
-
-                                                updatedRestaurants.add(
-                                                                existing);
-
-                                                result.setUpdated(
-                                                                result.getUpdated() + 1);
+                                                updateFromCsv(existing, imported);
+                                                updatedRestaurants.add(existing);
+                                                result.setUpdated(result.getUpdated() + 1);
 
                                         } else {
 
-                                                newRestaurants.add(
-                                                                imported);
+                                                // New restaurant gets the Location resolved from this row.
+                                                newRestaurants.add(imported);
 
-                                                result.setInserted(
-                                                                result.getInserted() + 1);
+                                                // Keep cache updated so a later CSV row cannot create
+                                                // the same restaurant again before saveAll().
+                                                existingMap.put(normalizedName, imported);
+
+                                                result.setInserted(result.getInserted() + 1);
                                         }
 
                                 } catch (Exception e) {
 
-                                        result.setFailed(
-                                                        result.getFailed() + 1);
+                                        result.setFailed(result.getFailed() + 1);
+
+                                        String message = e.getMessage();
+                                        if (!hasText(message)) {
+                                                message = e.getClass().getSimpleName();
+                                        }
 
                                         result.getErrors().add(
-                                                        "Row "
-                                                                        + record.getRecordNumber()
-                                                                        + ": "
-                                                                        + e.getMessage());
+                                                        "Row " + record.getRecordNumber()
+                                                                        + ": " + message);
                                 }
                         }
 
-                        // ====================================================
-                        // STEP 3 - BULK INSERT
-                        // ====================================================
-
+                        // 7. One bulk insert.
                         if (!newRestaurants.isEmpty()) {
-
-                                restaurantRepository.saveAll(
-                                                newRestaurants);
+                                restaurantRepository.saveAll(newRestaurants);
                         }
 
-                        // ====================================================
-                        // STEP 4 - BULK UPDATE
-                        // ====================================================
-
+                        // 8. One bulk update.
                         if (!updatedRestaurants.isEmpty()) {
-
-                                restaurantRepository.saveAll(
-                                                updatedRestaurants);
+                                restaurantRepository.saveAll(updatedRestaurants);
                         }
+
+                } catch (IllegalArgumentException e) {
+                        throw e;
 
                 } catch (Exception e) {
-
                         throw new IllegalArgumentException(
-                                        "Unable to process CSV: "
-                                                        + e.getMessage(),
-                                        e);
+                                        "Unable to process CSV: " + e.getMessage(), e);
                 }
 
                 return result;
+        }
+
+        // ============================================================
+        // LOAD EXISTING RESTAURANTS FOR ONE LOCATION
+        // ============================================================
+
+        private Map<String, Restaurant> loadExistingRestaurants(Long locationId) {
+
+                Map<String, Restaurant> existingMap = new HashMap<>();
+
+                List<Restaurant> restaurants = restaurantRepository
+                                .findByLocationId(locationId, Pageable.unpaged())
+                                .getContent();
+
+                for (Restaurant restaurant : restaurants) {
+
+                        String normalizedName = normalizeName(restaurant.getRestaurantName());
+
+                        if (hasText(normalizedName)) {
+                                existingMap.put(normalizedName, restaurant);
+                        }
+                }
+
+                return existingMap;
+        }
+
+        // ============================================================
+        // BUILD LOCATION-SAFE UNIQUE KEY
+        // ============================================================
+
+        private String buildRestaurantKey(Long locationId, String normalizedName) {
+                return locationId + ":" + normalizedName;
+        }
+
+        // ============================================================
+        // PARSE LOCATION ID FROM CSV
+        // ============================================================
+
+        private Long parseLocationId(CSVRecord record) {
+
+                String value = getValue(record, "locationId");
+
+                if (!hasText(value)) {
+                        throw new IllegalArgumentException("locationId is required.");
+                }
+
+                try {
+
+                        Long locationId = Long.parseLong(value.trim());
+
+                        if (locationId <= 0) {
+                                throw new IllegalArgumentException(
+                                                "locationId must be greater than 0.");
+                        }
+
+                        return locationId;
+
+                } catch (NumberFormatException e) {
+                        throw new IllegalArgumentException(
+                                        "Invalid locationId: " + value);
+                }
+        }
+
+        // ============================================================
+        // VALIDATE REQUIRED CSV HEADERS
+        // ============================================================
+
+        private void validateRequiredCsvHeaders(CSVParser parser) {
+
+                Set<String> headers = parser.getHeaderMap().keySet();
+
+                if (!headers.contains("locationId")) {
+                        throw new IllegalArgumentException(
+                                        "CSV header 'locationId' is required.");
+                }
+
+                if (!headers.contains("restaurantName")) {
+                        throw new IllegalArgumentException(
+                                        "CSV header 'restaurantName' is required.");
+                }
         }
 
         // ============================================================
@@ -464,6 +525,11 @@ public class RestaurantServiceImpl implements RestaurantService {
         private Restaurant parseRestaurant(
                         CSVRecord record,
                         Location location) {
+
+                if (location == null) {
+                        throw new IllegalArgumentException(
+                                        "Location is required for CSV row.");
+                }
 
                 String name = getValue(
                                 record,

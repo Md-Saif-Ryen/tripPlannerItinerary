@@ -1,47 +1,102 @@
 package com.example.tripItinerary.Service;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.tripItinerary.DTO.request.TouristPlaceRequest;
+import com.example.tripItinerary.DTO.response.TouristPlaceCsvImportResponse;
 import com.example.tripItinerary.DTO.response.TouristPlaceResponse;
 
 public interface TouristPlaceService {
 
-    TouristPlaceResponse create(TouristPlaceRequest request);
+        // ============================================================
+        // CREATE
+        // ============================================================
 
-    TouristPlaceResponse update(Long id, TouristPlaceRequest request);
+        TouristPlaceResponse create(
+                        TouristPlaceRequest request);
 
-    TouristPlaceResponse getById(Long id);
+        // ============================================================
+        // UPDATE
+        // ============================================================
 
-    List<TouristPlaceResponse> getAll();
+        TouristPlaceResponse update(
+                        Long id,
+                        TouristPlaceRequest request);
 
-    List<TouristPlaceResponse> getByLocation(Long locationId);
+        // ============================================================
+        // GET BY ID
+        // ============================================================
 
-    void delete(Long id);
+        TouristPlaceResponse getById(
+                        Long id);
 
-    Page<TouristPlaceResponse> getAll(
-            int page,
-            int size,
-            String sortBy,
-            String direction);
+        // ============================================================
+        // GET ALL - PAGINATED
+        // ============================================================
 
-    /**
-     * Get tourist places by location with pagination.
-     */
-    Page<TouristPlaceResponse> getByLocation(
-            Long locationId,
-            int page,
-            int size,
-            String sortBy,
-            String direction);
+        Page<TouristPlaceResponse> getAll(
+                        int page,
+                        int size,
+                        String sortBy,
+                        String direction);
 
-    long countAll();
+        // ============================================================
+        // GET BY LOCATION - PAGINATED
+        // ============================================================
 
-    long countByLocation(Long locationId);
+        Page<TouristPlaceResponse> getByLocation(
+                        Long locationId,
+                        int page,
+                        int size,
+                        String sortBy,
+                        String direction);
 
-    long countActive();
+        // ============================================================
+        // GET ACTIVE - PAGINATED
+        // ============================================================
 
-    long countActiveByLocation(Long locationId);
+        Page<TouristPlaceResponse> getActive(
+                        int page,
+                        int size,
+                        String sortBy,
+                        String direction);
+
+        // ============================================================
+        // GET ACTIVE BY LOCATION - PAGINATED
+        // ============================================================
+
+        Page<TouristPlaceResponse> getActiveByLocation(
+                        Long locationId,
+                        int page,
+                        int size,
+                        String sortBy,
+                        String direction);
+
+        // ============================================================
+        // DELETE
+        // ============================================================
+
+        void delete(Long id);
+
+        // ============================================================
+        // CSV IMPORT
+        // ============================================================
+
+        TouristPlaceCsvImportResponse importCsv(
+                        MultipartFile file);
+
+        // ============================================================
+        // COUNTS
+        // ============================================================
+
+        long countAll();
+
+        long countByLocation(
+                        Long locationId);
+
+        long countActive();
+
+        long countActiveByLocation(
+                        Long locationId);
 }

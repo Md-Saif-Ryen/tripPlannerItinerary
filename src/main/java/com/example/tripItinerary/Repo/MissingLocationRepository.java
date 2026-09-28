@@ -8,10 +8,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.example.tripItinerary.Entity.MissingLocation;
 
 public interface MissingLocationRepository
-        extends JpaRepository<MissingLocation, Long> {
+                extends JpaRepository<MissingLocation, Long> {
 
-    Optional<MissingLocation> findByLocationNameIgnoreCase(
-            String locationName);
+        Optional<MissingLocation> findByLocationNameIgnoreCase(String locationName);
 
-    List<MissingLocation> findByResolvedFalseOrderBySearchCountDesc();
+        List<MissingLocation> findByResolvedFalseOrderBySearchCountDesc();
 }

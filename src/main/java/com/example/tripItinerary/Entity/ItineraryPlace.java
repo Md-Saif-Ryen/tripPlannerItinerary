@@ -63,6 +63,9 @@ public class ItineraryPlace {
     @Column(name = "travel_time_minutes", nullable = false)
     private Integer travelTimeMinutes = 0;
 
+    @Column(name = "distance_km", precision = 10, scale = 2)
+    private BigDecimal distanceKm;
+
     @Column(columnDefinition = "TEXT")
     private String notes;
 

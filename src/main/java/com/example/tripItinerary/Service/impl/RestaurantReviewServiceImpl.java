@@ -25,94 +25,94 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional
 public class RestaurantReviewServiceImpl
-        implements RestaurantReviewService {
+                implements RestaurantReviewService {
 
-    private final RestaurantReviewRepository restaurantReviewRepository;
-    private final RestaurantRepository restaurantRepository;
-    private final UserRepository userRepository;
-    private final RestaurantReviewMapper restaurantReviewMapper;
+        private final RestaurantReviewRepository restaurantReviewRepository;
+        private final RestaurantRepository restaurantRepository;
+        private final UserRepository userRepository;
+        private final RestaurantReviewMapper restaurantReviewMapper;
 
-    @Override
-    public RestaurantReviewResponse create(
-            RestaurantReviewRequest request) {
+        @Override
+        public RestaurantReviewResponse create(
+                        RestaurantReviewRequest request) {
 
-        Restaurant restaurant = restaurantRepository
-                .findById(request.getRestaurantId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Restaurant not found with id : "
-                                + request.getRestaurantId()));
+                Restaurant restaurant = restaurantRepository
+                                .findById(request.getRestaurantId())
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Restaurant not found with id : "
+                                                                + request.getRestaurantId()));
 
-        User user = userRepository
-                .findById(request.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "User not found with id : "
-                                + request.getUserId()));
+                User user = userRepository
+                                .findById(request.getUserId())
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "User not found with id : "
+                                                                + request.getUserId()));
 
-        RestaurantReview review = restaurantReviewMapper.toEntity(request);
+                RestaurantReview review = restaurantReviewMapper.toEntity(request);
 
-        review.setRestaurant(restaurant);
-        review.setUser(user);
+                review.setRestaurant(restaurant);
+                review.setUser(user);
 
-        RestaurantReview savedReview = restaurantReviewRepository.save(review);
+                RestaurantReview savedReview = restaurantReviewRepository.save(review);
 
-        updateRestaurantRating(restaurant);
+                updateRestaurantRating(restaurant);
 
-        return restaurantReviewMapper.toResponse(savedReview);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<RestaurantReviewResponse> getByRestaurant(
-            Long restaurantId) {
-
-        if (!restaurantRepository.existsById(restaurantId)) {
-            throw new ResourceNotFoundException(
-                    "Restaurant not found with id : " + restaurantId);
+                return restaurantReviewMapper.toResponse(savedReview);
         }
 
-        return restaurantReviewRepository
-                .findByRestaurantId(restaurantId)
-                .stream()
-                .map(restaurantReviewMapper::toResponse)
-                .toList();
-    }
+        @Override
+        @Transactional(readOnly = true)
+        public List<RestaurantReviewResponse> getByRestaurant(
+                        Long restaurantId) {
 
-    @Override
-    public void delete(Long id) {
+                if (!restaurantRepository.existsById(restaurantId)) {
+                        throw new ResourceNotFoundException(
+                                        "Restaurant not found with id : " + restaurantId);
+                }
 
-        RestaurantReview review = restaurantReviewRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Restaurant review not found with id : "
-                                + id));
-
-        Restaurant restaurant = review.getRestaurant();
-
-        restaurantReviewRepository.delete(review);
-
-        updateRestaurantRating(restaurant);
-    }
-
-    private void updateRestaurantRating(Restaurant restaurant) {
-
-        List<RestaurantReview> reviews = restaurantReviewRepository
-                .findByRestaurantId(restaurant.getId());
-
-        if (reviews.isEmpty()) {
-            restaurant.setAverageRating(BigDecimal.ZERO);
-        } else {
-
-            BigDecimal total = reviews.stream()
-                    .map(review -> BigDecimal.valueOf(review.getRating()))
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-            BigDecimal average = total.divide(
-                    BigDecimal.valueOf(reviews.size()),
-                    2,
-                    RoundingMode.HALF_UP);
-
-            restaurant.setAverageRating(average);
+                return restaurantReviewRepository
+                                .findByRestaurantId(restaurantId)
+                                .stream()
+                                .map(restaurantReviewMapper::toResponse)
+                                .toList();
         }
 
-        restaurantRepository.save(restaurant);
-    }
+        @Override
+        public void delete(Long id) {
+
+                RestaurantReview review = restaurantReviewRepository.findById(id)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Restaurant review not found with id : "
+                                                                + id));
+
+                Restaurant restaurant = review.getRestaurant();
+
+                restaurantReviewRepository.delete(review);
+
+                updateRestaurantRating(restaurant);
+        }
+
+        private void updateRestaurantRating(Restaurant restaurant) {
+
+                List<RestaurantReview> reviews = restaurantReviewRepository
+                                .findByRestaurantId(restaurant.getId());
+
+                if (reviews.isEmpty()) {
+                        restaurant.setAverageRating(BigDecimal.ZERO);
+                } else {
+
+                        BigDecimal total = reviews.stream()
+                                        .map(review -> BigDecimal.valueOf(review.getRating()))
+                                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                        BigDecimal average = total.divide(
+                                        BigDecimal.valueOf(reviews.size()),
+                                        2,
+                                        RoundingMode.HALF_UP);
+
+                        restaurant.setAverageRating(average);
+                }
+
+                restaurantRepository.save(restaurant);
+        }
 }

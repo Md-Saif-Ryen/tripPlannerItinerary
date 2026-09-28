@@ -68,8 +68,7 @@ public interface RestaurantService {
             Long id);
 
     RestaurantCsvImportResponse importCsv(
-            MultipartFile file,
-            Long locationId);
+            MultipartFile file);
 
 
             long countAll();

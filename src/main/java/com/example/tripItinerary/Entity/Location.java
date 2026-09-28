@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import com.example.tripItinerary.enums.LocationType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
@@ -34,7 +35,7 @@ public class Location {
 
     @Column(name = "city_name", nullable = false, length = 100)
     private String cityName;
-    @Column(name = "address", nullable = false, length = 100)
+    @Column(name = "address", nullable = false, length = 255)
     private String address;
 
     @Column(precision = 10, scale = 8)
@@ -48,6 +49,21 @@ public class Location {
     private LocalDateTime createdAt;
 
     // ===================== RELATIONSHIPS =====================
+
+
+    @Enumerated(EnumType.STRING)
+@Column(name = "location_type", nullable = false, length = 30)
+private LocationType locationType;
+
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "parent_id")
+@JsonIgnore
+private Location parent;
+
+@OneToMany(mappedBy = "parent")
+@JsonIgnore
+@Builder.Default
+private List<Location> children = new ArrayList<>();
 @JsonIgnore
     @Builder.Default
     @OneToMany(mappedBy = "location", cascade = CascadeType.ALL, orphanRemoval = true)

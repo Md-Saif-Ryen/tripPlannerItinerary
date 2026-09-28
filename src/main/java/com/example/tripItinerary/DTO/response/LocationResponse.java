@@ -5,6 +5,8 @@ package com.example.tripItinerary.DTO.response;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.example.tripItinerary.enums.LocationType;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -31,5 +33,8 @@ public class LocationResponse {
     private BigDecimal longitude;
 
     private LocalDateTime createdAt;
+    private LocationType locationType;
+private Long parentId;
+private String parentName;
 
 }

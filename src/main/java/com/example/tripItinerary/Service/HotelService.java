@@ -26,8 +26,10 @@ package com.example.tripItinerary.Service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.tripItinerary.DTO.request.HotelRequest;
+import com.example.tripItinerary.DTO.response.HotelCsvImportResponse;
 import com.example.tripItinerary.DTO.response.HotelResponse;
 
 import java.util.List;
@@ -45,6 +47,9 @@ public interface HotelService {
     Page<HotelResponse> getAll(Pageable pageable);
 
     Page<HotelResponse> getByLocation(Long locationId, Pageable pageable);
+     HotelCsvImportResponse importCsv(
+            MultipartFile file
+    );
 
     void delete(Long id);
 

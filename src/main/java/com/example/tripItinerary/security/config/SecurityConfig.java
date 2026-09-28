@@ -73,9 +73,19 @@ public class SecurityConfig {
                                 "DELETE",
                                 "OPTIONS"));
 
-                configuration.setAllowedHeaders(List.of("*"));
+                configuration.setAllowedHeaders(List.of(
+                                "Authorization",
+                                "Content-Type",
+                                "Accept",
+                                "Origin",
+                                "X-Requested-With"));
+
+                configuration.setExposedHeaders(List.of(
+                                "Authorization"));
 
                 configuration.setAllowCredentials(true);
+
+                configuration.setMaxAge(3600L);
 
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
@@ -88,7 +98,6 @@ public class SecurityConfig {
         @Bean
         AuthenticationProvider authenticationProvider() {
 
-                @SuppressWarnings("deprecation")
                 DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
 
                 provider.setUserDetailsService(userDetailsService);

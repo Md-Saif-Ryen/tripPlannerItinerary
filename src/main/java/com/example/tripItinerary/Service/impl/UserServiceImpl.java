@@ -14,7 +14,7 @@ import com.example.tripItinerary.DTO.request.UserRequest;
 import com.example.tripItinerary.DTO.request.userUpdateRequest;
 import com.example.tripItinerary.DTO.response.UserResponse;
 import com.example.tripItinerary.Entity.DeletedUser;
-import com.example.tripItinerary.Entity.PasswordResetToken;
+// import com.example.tripItinerary.Entity.PasswordResetToken;
 import com.example.tripItinerary.Entity.User;
 import com.example.tripItinerary.Mapper.UserMapper;
 import com.example.tripItinerary.Repo.DeletedUserRepository;

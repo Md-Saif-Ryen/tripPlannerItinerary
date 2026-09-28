@@ -24,6 +24,7 @@ public class ItineraryPlaceResponse {
     private Integer travelTimeMinutes;
     private String notes;
     private Boolean completed;
+    private BigDecimal distanceKm;
 
     // ✅ Display fields for Hotel, Restaurant, TouristPlace
     private String placeName;

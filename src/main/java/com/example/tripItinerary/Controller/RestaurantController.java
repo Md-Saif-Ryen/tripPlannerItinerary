@@ -183,17 +183,14 @@ public class RestaurantController {
         // CSV IMPORT
         // ============================================================
 
-        @PostMapping(value = "/import_csv/{locationId}", consumes = "multipart/form-data")
+        @PostMapping(value = "/import_csv", consumes = "multipart/form-data")
         public ResponseEntity<ApiResponse<RestaurantCsvImportResponse>> importCsv(
-                        @PathVariable Long locationId,
                         @RequestParam("file") MultipartFile file) {
 
                 return ResponseEntity.ok(
                                 ApiResponse.success(
                                                 "Restaurant CSV imported successfully.",
-                                                restaurantService.importCsv(
-                                                                file,
-                                                                locationId)));
+                                                restaurantService.importCsv(file)));
         }
 
         // ============================================================
