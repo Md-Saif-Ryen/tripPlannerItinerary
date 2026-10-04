@@ -19,7 +19,7 @@ target/
 *.iws
 *.iml
 *.ipr
-
+src/main/resources/firebase-service-account.json
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
