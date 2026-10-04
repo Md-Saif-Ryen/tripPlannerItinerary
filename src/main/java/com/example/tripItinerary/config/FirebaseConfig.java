@@ -1,53 +1,63 @@
 package com.example.tripItinerary.config;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-import org.springframework.context.annotation.Configuration;
-
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
-
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 @Configuration
 public class FirebaseConfig {
 
-    @PostConstruct
-    public void initializeFirebase() throws IOException {
+        @Value("${firebase.service-account-base64:}")
+        private String firebaseServiceAccountBase64;
 
-        // Prevent duplicate FirebaseApp initialization
-        if (!FirebaseApp.getApps().isEmpty()) {
-            return;
+        @PostConstruct
+        public void initializeFirebase() throws IOException {
+
+                if (!FirebaseApp.getApps().isEmpty()) {
+                        return;
+                }
+
+                if (firebaseServiceAccountBase64 == null ||
+                                firebaseServiceAccountBase64.isBlank()) {
+
+                        throw new IllegalStateException(
+                                        "FIREBASE_SERVICE_ACCOUNT_BASE64 environment variable " +
+                                                        "is not configured.");
+                }
+
+                try {
+
+                        byte[] decodedJson = Base64.getDecoder().decode(
+                                        firebaseServiceAccountBase64.trim());
+
+                        try (InputStream serviceAccount = new ByteArrayInputStream(decodedJson)) {
+
+                                FirebaseOptions options = FirebaseOptions.builder()
+                                                .setCredentials(
+                                                                GoogleCredentials.fromStream(
+                                                                                serviceAccount))
+                                                .build();
+
+                                FirebaseApp.initializeApp(options);
+
+                                System.out.println(
+                                                "Firebase initialized successfully.");
+                        }
+
+                } catch (IllegalArgumentException e) {
+
+                        throw new IllegalStateException(
+                                        "FIREBASE_SERVICE_ACCOUNT_BASE64 contains invalid Base64.",
+                                        e);
+                }
         }
-
-        try (InputStream serviceAccount =
-                     getClass()
-                             .getClassLoader()
-                             .getResourceAsStream(
-                                     "firebase-service-account.json")) {
-
-            if (serviceAccount == null) {
-                throw new IllegalStateException(
-                        "firebase-service-account.json not found in classpath.");
-            }
-
-            FirebaseOptions options = FirebaseOptions.builder()
-                    .setCredentials(
-                            GoogleCredentials.fromStream(serviceAccount))
-                    .build();
-
-            FirebaseApp.initializeApp(options);
-
-            System.out.println(
-                    "Firebase Admin SDK initialized successfully.");
-
-        } catch (IOException e) {
-
-            throw new IllegalStateException(
-                    "Failed to initialize Firebase Admin SDK.",
-                    e);
-        }
-    }
 }
