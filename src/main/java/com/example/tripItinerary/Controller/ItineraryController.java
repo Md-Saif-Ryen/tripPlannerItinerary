@@ -101,12 +101,26 @@ public class ItineraryController {
                                 selectionId);
         }
 
+        // @PutMapping("/places/{itineraryPlaceId}/complete")
+        // public Boolean completePlace(
+        //                 @PathVariable Long itineraryPlaceId) {
+        //         return itineraryService.markPlaceCompleted(
+        //                         itineraryPlaceId);
+        // }
+
         @PutMapping("/places/{itineraryPlaceId}/complete")
-        public ItineraryResponse completePlace(
+        public ResponseEntity<ApiResponse> completePlace(
                         @PathVariable Long itineraryPlaceId) {
-                return itineraryService.markPlaceCompleted(
-                                itineraryPlaceId);
+
+                itineraryService.markPlaceCompleted(itineraryPlaceId);
+
+                return ResponseEntity.ok(
+                                ApiResponse.builder()
+                                                .success(true)
+                                                .message("Activity marked as completed successfully.")
+                                                .build());
         }
+
 
         @DeleteMapping("/deleteById/{id}")
         public ResponseEntity<ApiResponse<Void>> delete(

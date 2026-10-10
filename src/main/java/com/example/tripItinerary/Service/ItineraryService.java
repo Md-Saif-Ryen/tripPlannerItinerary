@@ -42,7 +42,9 @@ public interface ItineraryService {
              Long userId,
              String selectionId);
 
-     ItineraryResponse markPlaceCompleted(
-             Long itineraryPlaceId);
+    //  ItineraryResponse markPlaceCompleted(
+    //          Long itineraryPlaceId);
+
+    void markPlaceCompleted(Long itineraryPlaceId);
     
 }
